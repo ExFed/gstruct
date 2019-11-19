@@ -1,0 +1,10 @@
+# Gradle caches and build outputs
+.gradle
+bin
+build
+
+# IDE metadata
+.classpath
+.project
+.settings
+.vscode
