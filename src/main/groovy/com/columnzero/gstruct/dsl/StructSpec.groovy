@@ -1,20 +1,16 @@
 package com.columnzero.gstruct.dsl
 
-import groovy.transform.Canonical
+import groovy.transform.*
 
 enum Primitive {
     BOOLEAN, NUMBER, STRING
 }
 
 @Canonical(includePackage=false, excludes='owner')
+@TupleConstructor(excludes='')
 class PrimitiveSpec {
     StructSpec owner
     Primitive type
-
-    PrimitiveSpec(Primitive type) {
-        this.owner = owner
-        this.type = type
-    }
 }
 
 @Canonical(includePackage=false, excludes='owner')
@@ -27,14 +23,14 @@ class StructSpec {
     }
 
     PrimitiveSpec bool(String name) {
-        fields[name] = new PrimitiveSpec(Primitive.BOOLEAN)
+        fields[name] = new PrimitiveSpec(this, Primitive.BOOLEAN)
     }
 
     PrimitiveSpec number(String name) {
-        fields[name] = new PrimitiveSpec(Primitive.NUMBER)
+        fields[name] = new PrimitiveSpec(this, Primitive.NUMBER)
     }
 
     PrimitiveSpec string(String name) {
-        fields[name] = new PrimitiveSpec(Primitive.STRING)
+        fields[name] = new PrimitiveSpec(this, Primitive.STRING)
     }
 }
