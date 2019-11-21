@@ -2,7 +2,6 @@ package com.columnzero.gstruct
 
 import groovy.transform.*
 
-@EqualsAndHashCode
 class StructGraph {
     final static StructGraph sg = new StructGraph()
 

@@ -1,12 +1,13 @@
 package com.columnzero.gstruct
 
 class Relationships {
-    protected static final CName MEMBER = new CName('isMember', Scope.GLOBAL)
-    protected static final CName TYPE = new CName('isType', Scope.GLOBAL)
+    static final CName MEMBER = new CName('isMember', Scope.GLOBAL)
+    static final CName TYPE = new CName('isType', Scope.GLOBAL)
 }
 
 class Scope {
-    protected static final CName GLOBAL = new CName('', null)
+    static final CName GLOBAL = new CName('', null)
+    static final CName PRIMITIVE = new CName('primitive', GLOBAL)
 
     private final CName $name
 
@@ -14,8 +15,8 @@ class Scope {
         this.$name = GLOBAL
     }
 
-    def primitive(CName name) {
-        // noop
+    def primitive(CName member) {
+        StructGraph.edge(member, Relationships.TYPE, PRIMITIVE)
     }
 
     def propertyMissing(String name) {
