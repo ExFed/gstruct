@@ -8,7 +8,7 @@ class DslMain {
             new CompilerConfiguration(
                 scriptBaseClass:DelegatingScript.class.name
             )
-        ).parse(file.text)
+        ).parse(file)
 
         def dsl = new DslMain()
         script.setDelegate(dsl.root)
