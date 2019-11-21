@@ -1,3 +1,7 @@
-string 'data'
-number 'value'
-bool 'lies'
+primitive string
+primitive number
+primitive bool
+
+string data
+number value
+bool lies

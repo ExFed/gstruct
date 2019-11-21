@@ -1,23 +1,23 @@
 package com.columnzero.gstruct
 
-import groovy.transform.BaseScript
 import spock.lang.Specification
 
-import com.columnzero.gstruct.dsl.StructSpec
-
 class DslMainTest extends Specification {
-    def "primitives parse correctly"() {
+    // shorthand helper for names in the global namespace
+    def gn(String cName) {
+        return new CName(cName, Scope.GLOBAL)
+    }
+
+    def "primitives parse"() {
         given:
             def dslFile = new File(this.getClass().getResource("primitives.gstruct").toURI())
-            def expectSpec = new StructSpec(null)
-            expectSpec.string('data')
-            expectSpec.number('value')
-            expectSpec.bool('lies')
-
+            def expect = new StructGraph()
+            expect.put(gn('data'), gn('isType'), gn('string'))
+            expect.put(gn('value'), gn('isType'), gn('number'))
+            expect.put(gn('lies'), gn('isType'), gn('bool'))
         when:
-            def spec = DslMain.parse(dslFile)
-
+            def actual = DslMain.parse(dslFile)
         then:
-            assert spec == expectSpec
+            actual == expect
     }
 }
