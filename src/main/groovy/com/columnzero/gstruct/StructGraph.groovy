@@ -2,6 +2,13 @@ package com.columnzero.gstruct
 
 import groovy.transform.*
 
+@Immutable
+class GraphTriple {
+    CName subject
+    CName predicate
+    CName object
+}
+
 class StructGraph {
     final static StructGraph sg = new StructGraph()
 
@@ -9,15 +16,16 @@ class StructGraph {
         sg.put(subject, predicate, object)
     }
 
-    // [ Subject : [ Object : [PredicateSet] ] ]
-    // e.g.: sop['parent']['child'] += 'isType'
-    private final def sop = [:].withDefault {[:].withDefault {[] as Set}}
+    private final def triples = []
 
     public void put(CName subject, CName predicate, CName object) {
-        sop[subject][object] += predicate
+        triples << new GraphTriple(subject, predicate, object)
     }
 
     public Map getSop() {
-        return  sop
+        // [ Subject : [ Object : [PredicateSet] ] ]
+        def sopIndex = [:].withDefault {[:].withDefault {[] as Set}}
+        triples.each { sopIndex[it.subject][it.object] << it.predicate }
+        return sopIndex
     }
 }
