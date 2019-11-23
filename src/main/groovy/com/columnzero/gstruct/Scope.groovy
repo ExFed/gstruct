@@ -25,7 +25,7 @@ class FileScope {
 
     def propertyMissing(String name) {
         // "${this.getClass()} property: $namespace"
-        return new CNameBuilder(name, $namespace)
+        return new CName(name, $namespace)
     }
 
     def methodMissing(String methodName, args) {
@@ -36,7 +36,7 @@ class FileScope {
             if (memberCName instanceof String) {
                 typeName = new CName(methodName, $namespace)
             }
-            if (memberCName instanceof CName || memberCName instanceof CNameBuilder) {
+            if (memberCName instanceof CName) {
                 StructGraph.edge(memberCName as CName, Relationships.TYPE, typeName)
                 return
             }

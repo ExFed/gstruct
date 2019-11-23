@@ -4,30 +4,16 @@ import groovy.transform.*
 
 @Immutable(includePackage = false)
 class CName {
-    public static final String DELIMITER = '/'
+    static final String DELIMITER = '/'
+
+    static List toPath(CName cn) {
+        return (cn.namespace ? toPath(cn.namespace) : []) + cn.name
+    }
 
     String name
     CName namespace
 
-    List getPath() {
-        return (namespace?.path ?: []) + name
-    }
-
     String toString() {
-        return this.path.join(DELIMITER)
-    }
-}
-
-@Immutable(includePackage = false, allNames = true)
-class CNameBuilder {
-    String $name
-    CName $namespace
-
-    def asType(Class clazz) {
-        if (clazz == CName) {
-            return new CName($name, $namespace)
-        }
-
-        throw new ClassCastException(clazz)
+        return toPath(this).join(DELIMITER)
     }
 }

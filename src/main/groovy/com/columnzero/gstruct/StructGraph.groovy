@@ -18,8 +18,9 @@ class StructGraph {
 
     private final def triples = []
 
-    public void put(CName subject, CName predicate, CName object) {
+    public StructGraph put(CName subject, CName predicate, CName object) {
         triples << new GraphTriple(subject, predicate, object)
+        return this
     }
 
     public Map getSop() {

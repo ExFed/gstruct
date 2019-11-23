@@ -3,12 +3,13 @@ package com.columnzero.gstruct
 import spock.lang.Specification
 
 class CNameTest extends Specification {
+
     def "path"() {
         given:
             def cn = new CName('leaf', new CName('inner', new CName('root', null)))
 
         expect:
-            cn.path == ['root', 'inner', 'leaf']
+            CName.toPath(cn) == ['root', 'inner', 'leaf']
     }
 
     def "path empty root"() {
@@ -16,6 +17,6 @@ class CNameTest extends Specification {
             def cn = new CName('leaf', new CName('inner', new CName('', null)))
 
         expect:
-            cn.path == ['', 'inner', 'leaf']
+            CName.toPath(cn) == ['', 'inner', 'leaf']
     }
 }
