@@ -22,7 +22,13 @@ class CNameTest extends Specification {
 
     def "path parses to CName"() {
         expect:
-            CName.of('root/inner/leaf') ==
-                new CName('leaf', new CName('inner', new CName('root', null)))
+            CName.of(path) == cn
+
+        where:
+            path << ['root/inner/leaf', '/root']
+            cn << [
+                new CName('leaf', new CName('inner', new CName('root', null))),
+                new CName('root', new CName('', null))
+            ]
     }
 }

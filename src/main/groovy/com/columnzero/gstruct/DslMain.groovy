@@ -11,10 +11,11 @@ class DslMain {
         ).parse(file)
 
         def dsl = new DslMain()
-        script.setDelegate(dsl.root)
-        script.run()
-        return StructGraph.sg
-    }
 
-    FileScope root = new FileScope()
+        def sg = new StructGraph()
+        def root = new FileScope(sg)
+        script.setDelegate(root)
+        script.run()
+        return sg
+    }
 }

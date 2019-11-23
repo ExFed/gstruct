@@ -7,7 +7,7 @@ class CName {
     static final String DELIMITER = '/'
 
     static CName of(String path) {
-        return of(path.tokenize(DELIMITER))
+        return of(path.split(DELIMITER))
     }
 
     static CName of(String... path) {
@@ -33,5 +33,9 @@ class CName {
 
     String toString() {
         return toPath(this).join(DELIMITER)
+    }
+
+    CName propertyMissing(String name) {
+        return new CName(name, this)
     }
 }

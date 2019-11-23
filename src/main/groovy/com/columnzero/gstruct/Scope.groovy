@@ -10,17 +10,29 @@ class Keywords {
 }
 
 class Relationships {
-    static final CName MEMBER = new CName('isMember', Scopes.GLOBAL)
+    static final CName MEMBER = new CName('hasMember', Scopes.GLOBAL)
     static final CName TYPE = new CName('isType', Scopes.GLOBAL)
 }
 
 class FileScope {
     private CName $namespace = Scopes.UNSET
 
-    FileScope() {}
+    private final StructGraph $graph
 
-    def primitive(CName member) {
-        StructGraph.edge(member, Relationships.TYPE, Keywords.PRIMITIVE)
+    FileScope(StructGraph graph) {
+        this.$graph = graph
+    }
+
+    void primitive(CName member) {
+        $graph.put(member, Relationships.TYPE, Keywords.PRIMITIVE)
+    }
+
+    void namespace(CName namespace) {
+        if ($namespace == Scopes.UNSET) {
+            $namespace = namespace
+        } else {
+            throw new UnsupportedOperationException("Cannot set namespace more than once!")
+        }
     }
 
     def propertyMissing(String name) {
@@ -37,7 +49,7 @@ class FileScope {
                 typeName = new CName(methodName, $namespace)
             }
             if (memberCName instanceof CName) {
-                StructGraph.edge(memberCName as CName, Relationships.TYPE, typeName)
+                $graph.put(memberCName as CName, Relationships.TYPE, typeName)
                 return
             }
         }

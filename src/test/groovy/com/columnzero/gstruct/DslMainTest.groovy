@@ -2,6 +2,7 @@ package com.columnzero.gstruct
 
 import spock.lang.Specification
 
+import static com.columnzero.gstruct.Keywords.*
 import static com.columnzero.gstruct.Relationships.*
 
 class DslMainTest extends Specification {
@@ -27,6 +28,20 @@ class DslMainTest extends Specification {
                 .put(gn('lies'), TYPE, gn('bool'))
         when:
             def actual = DslMain.parse(dslFile)
+        then:
+            actual.sop == expect.sop
+    }
+
+    def 'namespace parses'() {
+        given:
+            def dslFile = gStruct('namespace.gstruct')
+            def namespace = CName.of('/x/y/z/foobar')
+            def expect = new StructGraph()
+                .put(namespace, TYPE, PRIMITIVE)
+
+        when:
+            def actual = DslMain.parse(dslFile)
+
         then:
             actual.sop == expect.sop
     }

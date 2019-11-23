@@ -10,12 +10,6 @@ class GraphTriple {
 }
 
 class StructGraph {
-    final static StructGraph sg = new StructGraph()
-
-    static void edge(CName subject, CName predicate, CName object) {
-        sg.put(subject, predicate, object)
-    }
-
     private final def triples = []
 
     public StructGraph put(CName subject, CName predicate, CName object) {
