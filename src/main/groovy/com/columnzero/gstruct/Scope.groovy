@@ -1,39 +1,43 @@
 package com.columnzero.gstruct
 
-class Relationships {
-    static final CName MEMBER = new CName('isMember', Scope.GLOBAL)
-    static final CName TYPE = new CName('isType', Scope.GLOBAL)
+class Scopes {
+    static final CName UNSET = new CName('', null)
+    static final CName GLOBAL = new CName('', null)
 }
 
-class Scope {
-    static final CName GLOBAL = new CName('', null)
-    static final CName PRIMITIVE = new CName('primitive', GLOBAL)
+class Keywords {
+    static final CName PRIMITIVE = new CName('primitive', Scopes.GLOBAL)
+}
 
-    private final CName $name
+class Relationships {
+    static final CName MEMBER = new CName('isMember', Scopes.GLOBAL)
+    static final CName TYPE = new CName('isType', Scopes.GLOBAL)
+}
 
-    Scope() {
-        this.$name = GLOBAL
-    }
+class FileScope {
+    private CName $namespace = Scopes.UNSET
+
+    FileScope() {}
 
     def primitive(CName member) {
-        StructGraph.edge(member, Relationships.TYPE, PRIMITIVE)
+        StructGraph.edge(member, Relationships.TYPE, Keywords.PRIMITIVE)
     }
 
     def propertyMissing(String name) {
-        // "${this.getClass()} property: $name"
-        return new CName(name, $name)
+        // "${this.getClass()} property: $namespace"
+        return new CNameBuilder(name, $namespace)
     }
 
     def methodMissing(String methodName, args) {
         // "${this.getClass()} method: $methodName($args)"
-        def typeName = new CName(methodName, $name)
+        def typeName = new CName(methodName, $namespace)
         if (args.size() == 1) {
             def memberCName = args[0]
             if (memberCName instanceof String) {
-                memberCName = new CName(memberCName, $name)
+                typeName = new CName(methodName, $namespace)
             }
-            if (memberCName instanceof CName) {
-                StructGraph.edge(memberCName, Relationships.TYPE, typeName)
+            if (memberCName instanceof CName || memberCName instanceof CNameBuilder) {
+                StructGraph.edge(memberCName as CName, Relationships.TYPE, typeName)
                 return
             }
         }

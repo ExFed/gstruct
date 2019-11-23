@@ -5,7 +5,7 @@ import spock.lang.Specification
 class DslMainTest extends Specification {
     // shorthand helper for names in the global namespace
     def gn(String cName) {
-        return new CName(cName, Scope.GLOBAL)
+        return new CName(cName, Scopes.GLOBAL)
     }
 
     def "primitives parse"() {

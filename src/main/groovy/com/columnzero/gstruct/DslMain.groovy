@@ -16,5 +16,5 @@ class DslMain {
         return StructGraph.sg
     }
 
-    Scope root = new Scope()
+    FileScope root = new FileScope()
 }

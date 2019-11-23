@@ -17,3 +17,17 @@ class CName {
         return this.path.join(DELIMITER)
     }
 }
+
+@Immutable(includePackage = false, allNames = true)
+class CNameBuilder {
+    String $name
+    CName $namespace
+
+    def asType(Class clazz) {
+        if (clazz == CName) {
+            return new CName($name, $namespace)
+        }
+
+        throw new ClassCastException(clazz)
+    }
+}
