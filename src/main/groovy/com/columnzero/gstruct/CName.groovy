@@ -38,4 +38,12 @@ class CName {
     CName propertyMissing(String name) {
         return new CName(name, this)
     }
+
+    def methodMissing(String name, args) {
+        if (args.size() == 1 && args[0] instanceof Closure) {
+            return [propertyMissing(name), args[0]]
+        }
+
+        throw new MissingMethodException(name, this.getClass(), args)
+    }
 }

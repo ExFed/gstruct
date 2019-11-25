@@ -16,16 +16,18 @@ class Relationships {
 }
 
 interface ScopeSpec {
+    void namespace(CName namespace, Closure spec)
     void primitive(CName member)
     void struct(CName name, Closure spec)
 }
 
-class FileScope implements ScopeSpec {
-    private CName $namespace = Scopes.UNSET
+class NamedScope implements ScopeSpec {
+    private final CName $namespace
 
     private final StructGraph $graph
 
-    FileScope(StructGraph graph) {
+    NamedScope(CName name, StructGraph graph) {
+        this.$namespace = name
         this.$graph = graph
     }
 
@@ -40,12 +42,12 @@ class FileScope implements ScopeSpec {
         $graph.put(member, Relationships.TYPE, Keywords.PRIMITIVE)
     }
 
-    void namespace(CName namespace) {
-        if ($namespace == Scopes.UNSET) {
-            $namespace = namespace
-        } else {
-            throw new UnsupportedOperationException("Cannot set namespace more than once!")
-        }
+    @Override
+    void namespace(CName name, Closure spec) {
+        def subScope = new NamedScope(name, $graph)
+        spec = spec.rehydrate(subScope, this, this)
+        spec.resolveStrategy = Closure.DELEGATE_ONLY
+        spec()
     }
 
     def propertyMissing(String name) {

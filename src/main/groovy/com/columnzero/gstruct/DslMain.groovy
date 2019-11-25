@@ -13,7 +13,7 @@ class DslMain {
         def dsl = new DslMain()
 
         def sg = new StructGraph()
-        def root = new FileScope(sg)
+        def root = new NamedScope(Scopes.GLOBAL, sg)
         script.setDelegate(root)
         script.run()
         return sg

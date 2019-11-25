@@ -7,22 +7,26 @@ class GraphTriple {
     CName subject
     CName predicate
     CName object
+
+    @Override
+    String toString() {
+        return "<$subject><$predicate><$object>"
+    }
 }
 
-@EqualsAndHashCode
-@ToString
+@Canonical
 class StructGraph {
-    private final def triples = []
+    def triples = []
 
     public StructGraph put(CName subject, CName predicate, CName object) {
         triples << new GraphTriple(subject, predicate, object)
         return this
     }
 
-    public Map getSopIndex() {
-        // [ Subject : [ Object : [PredicateSet] ] ]
-        def sopIndex = [:].withDefault {[:].withDefault {[] as Set}}
-        triples.each { sopIndex[it.subject][it.object] << it.predicate }
-        return sopIndex
+    public Map spoIndex() {
+        // [ Subject : [ Predicate : [ Object ] ] ]
+        def index = [:].withDefault {[:].withDefault {[] as Set}}
+        triples.each { index[it.subject][it.predicate] << it.object }
+        return index
     }
 }
