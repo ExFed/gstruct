@@ -1,0 +1,7 @@
+namespace x {
+    namespace y {
+        namespace z {
+            primitive foobar
+        }
+    }
+}

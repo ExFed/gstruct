@@ -46,6 +46,20 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
+    def 'nested namespaces parse'() {
+        given:
+            def dslFile = gStruct('nested_namespaces.gstruct')
+            def namespace = CName.of('/x/y/z/foobar')
+            def expect = new StructGraph()
+                .put(namespace, TYPE, PRIMITIVE)
+
+        when:
+            def actual = DslMain.parse(dslFile)
+
+        then:
+            actual == expect
+    }
+
     def 'empty struct parses'() {
         given:
             def dslFile = gStruct 'empty_struct.gstruct'
