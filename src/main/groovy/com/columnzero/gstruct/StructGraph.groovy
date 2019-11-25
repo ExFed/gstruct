@@ -16,7 +16,7 @@ class GraphTriple {
 
 @Canonical
 class StructGraph {
-    def triples = []
+    final def triples = []
 
     public StructGraph put(CName subject, CName predicate, CName object) {
         triples << new GraphTriple(subject, predicate, object)
