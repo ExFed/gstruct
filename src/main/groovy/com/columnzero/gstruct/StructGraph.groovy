@@ -22,11 +22,4 @@ class StructGraph {
         triples << new GraphTriple(subject, predicate, object)
         return this
     }
-
-    public Map spoIndex() {
-        // [ Subject : [ Predicate : [ Object ] ] ]
-        def index = [:].withDefault {[:].withDefault {[] as Set}}
-        triples.each { index[it.subject][it.predicate] << it.object }
-        return index
-    }
 }
