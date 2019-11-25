@@ -9,6 +9,8 @@ class GraphTriple {
     CName object
 }
 
+@EqualsAndHashCode
+@ToString
 class StructGraph {
     private final def triples = []
 
@@ -17,7 +19,7 @@ class StructGraph {
         return this
     }
 
-    public Map getSop() {
+    public Map getSopIndex() {
         // [ Subject : [ Object : [PredicateSet] ] ]
         def sopIndex = [:].withDefault {[:].withDefault {[] as Set}}
         triples.each { sopIndex[it.subject][it.object] << it.predicate }

@@ -1,6 +1,6 @@
 package com.columnzero.gstruct
 
-import spock.lang.Specification
+import spock.lang.*
 
 import static com.columnzero.gstruct.Keywords.*
 import static com.columnzero.gstruct.Relationships.*
@@ -20,16 +20,16 @@ class DslMainTest extends Specification {
         given:
             def dslFile = gStruct('primitives.gstruct')
             def expect = new StructGraph()
-                .put(gn('string'), TYPE, gn('primitive'))
-                .put(gn('number'), TYPE, gn('primitive'))
-                .put(gn('bool'), TYPE, gn('primitive'))
+                .put(gn('string'), TYPE, PRIMITIVE)
+                .put(gn('number'), TYPE, PRIMITIVE)
+                .put(gn('bool'), TYPE, PRIMITIVE)
                 .put(gn('data'), TYPE, gn('string'))
                 .put(gn('value'), TYPE, gn('number'))
                 .put(gn('lies'), TYPE, gn('bool'))
         when:
             def actual = DslMain.parse(dslFile)
         then:
-            actual.sop == expect.sop
+            actual == expect
     }
 
     def 'namespace parses'() {
@@ -43,6 +43,19 @@ class DslMainTest extends Specification {
             def actual = DslMain.parse(dslFile)
 
         then:
-            actual.sop == expect.sop
+            actual == expect
+    }
+
+    def 'empty struct parses'() {
+        given:
+            def dslFile = gStruct 'empty_struct.gstruct'
+            def expect = new StructGraph()
+                .put(gn('empty'), TYPE, STRUCT)
+
+        when:
+            def actual = DslMain.parse(dslFile)
+
+        then:
+            actual == expect
     }
 }

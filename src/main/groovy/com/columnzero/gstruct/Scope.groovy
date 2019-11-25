@@ -7,6 +7,7 @@ class Scopes {
 
 class Keywords {
     static final CName PRIMITIVE = new CName('primitive', Scopes.GLOBAL)
+    static final CName STRUCT = new CName('struct', Scopes.GLOBAL)
 }
 
 class Relationships {
@@ -14,7 +15,12 @@ class Relationships {
     static final CName TYPE = new CName('isType', Scopes.GLOBAL)
 }
 
-class FileScope {
+interface ScopeSpec {
+    void primitive(CName member)
+    void struct(CName name, Closure spec)
+}
+
+class FileScope implements ScopeSpec {
     private CName $namespace = Scopes.UNSET
 
     private final StructGraph $graph
@@ -23,6 +29,13 @@ class FileScope {
         this.$graph = graph
     }
 
+    @Override
+    void struct(CName name, Closure spec) {
+        println "${this.getClass()} struct: $name" // TODO implement
+        $graph.put(name, Relationships.TYPE, Keywords.STRUCT)
+    }
+
+    @Override
     void primitive(CName member) {
         $graph.put(member, Relationships.TYPE, Keywords.PRIMITIVE)
     }
@@ -44,16 +57,17 @@ class FileScope {
         // "${this.getClass()} method: $methodName($args)"
         def typeName = new CName(methodName, $namespace)
         if (args.size() == 1) {
-            def memberCName = args[0]
-            if (memberCName instanceof String) {
-                typeName = new CName(methodName, $namespace)
+            def arg = args[0]
+            if (arg instanceof Closure) {
+                return [typeName, arg]
             }
-            if (memberCName instanceof CName) {
-                $graph.put(memberCName as CName, Relationships.TYPE, typeName)
+
+            if (arg instanceof CName) {
+                $graph.put(arg, Relationships.TYPE, typeName)
                 return
             }
         }
 
-        throw new MissingMethodException(name, this.getClass(), args)
+        throw new MissingMethodException(methodName, this.getClass(), args)
     }
 }
