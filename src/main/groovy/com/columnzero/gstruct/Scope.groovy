@@ -11,8 +11,7 @@ class Keywords {
 }
 
 class Relationships {
-    static final CName MEMBER = new CName('hasMember', Scopes.GLOBAL)
-    static final CName TYPE = new CName('isType', Scopes.GLOBAL)
+    static final CName TYPE = new CName('is', Scopes.GLOBAL)
 }
 
 interface ScopeSpec {
@@ -33,8 +32,11 @@ class NamedScope implements ScopeSpec {
 
     @Override
     void struct(CName name, Closure spec) {
-        println "${this.getClass()} struct: $name" // TODO implement
         $graph.put(name, Relationships.TYPE, Keywords.STRUCT)
+        def subScope = new NamedScope(name, $graph)
+        spec = spec.rehydrate(subScope, this, this)
+        spec.resolveStrategy = Closure.DELEGATE_ONLY
+        spec()
     }
 
     @Override

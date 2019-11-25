@@ -72,4 +72,18 @@ class DslMainTest extends Specification {
         then:
             actual == expect
     }
+
+    def 'struct parses'() {
+        given:
+            def dslFile = gStruct 'struct.gstruct'
+            def expect = new StructGraph()
+                .put(gn('object'), TYPE, STRUCT)
+                .put(CName.of('/object/data'), TYPE, PRIMITIVE)
+
+        when:
+            def actual = DslMain.parse(dslFile)
+
+        then:
+            actual == expect
+    }
 }
