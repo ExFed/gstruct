@@ -25,7 +25,7 @@ class DslMainTest extends Specification {
                 .put(gn('bool'), TYPE, PRIMITIVE)
                 .put(gn('data'), TYPE, gn('string'))
                 .put(gn('value'), TYPE, gn('number'))
-                .put(gn('lies'), TYPE, gn('bool'))
+                .put(gn('fakeNews'), TYPE, gn('bool'))
         when:
             def actual = DslMain.parse(dslFile)
         then:

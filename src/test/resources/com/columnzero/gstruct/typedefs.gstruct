@@ -4,4 +4,4 @@ type bool : primitive
 
 type data : string,
     value : number,
-    lies : bool
+    fakeNews : bool
