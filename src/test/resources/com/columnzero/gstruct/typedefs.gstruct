@@ -1,0 +1,7 @@
+type string : primitive
+type number : primitive
+type bool : primitive
+
+type data : string,
+    value : number,
+    lies : bool

@@ -16,9 +16,9 @@ class DslMainTest extends Specification {
         return new File(DslMainTest.getResource(filename).toURI())
     }
 
-    def 'primitives parse'() {
+    def 'typedefs parse'() {
         given:
-            def dslFile = gStruct('primitives.gstruct')
+            def dslFile = gStruct('typedefs.gstruct')
             def expect = new StructGraph()
                 .put(gn('string'), TYPE, PRIMITIVE)
                 .put(gn('number'), TYPE, PRIMITIVE)
@@ -32,6 +32,7 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
+    @Ignore
     def 'namespace parses'() {
         given:
             def dslFile = gStruct('namespace.gstruct')
@@ -46,6 +47,7 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
+    @Ignore
     def 'nested namespaces parse'() {
         given:
             def dslFile = gStruct('nested_namespaces.gstruct')
@@ -60,6 +62,7 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
+    @Ignore
     def 'empty struct parses'() {
         given:
             def dslFile = gStruct 'empty_struct.gstruct'
@@ -73,6 +76,7 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
+    @Ignore
     def 'struct parses'() {
         given:
             def dslFile = gStruct 'struct.gstruct'

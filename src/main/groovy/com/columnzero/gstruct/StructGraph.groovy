@@ -23,3 +23,13 @@ class StructGraph {
         return this
     }
 }
+
+@Canonical
+class GraphContext {
+    final StructGraph graph
+    final CName name
+
+    GraphContext scope(CName name) {
+        return new GraphContext(this.graph, name)
+    }
+}

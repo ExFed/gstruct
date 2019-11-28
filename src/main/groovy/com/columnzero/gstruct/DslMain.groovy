@@ -12,10 +12,10 @@ class DslMain {
 
         def dsl = new DslMain()
 
-        def sg = new StructGraph()
-        def root = new NamedScope(Scopes.GLOBAL, sg)
+        def rootContext = new GraphContext(new StructGraph(), Scopes.GLOBAL)
+        def root = new DefaultNamespaceSpec(rootContext)
         script.setDelegate(root)
         script.run()
-        return sg
+        return rootContext.graph
     }
 }
