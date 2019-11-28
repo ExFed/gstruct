@@ -17,7 +17,7 @@ STRUCT := 'struct'
 NAMESPACE := 'namespace'
 TYPE := 'type'
 
-SPEC := QNAME | SPECOBJ
+SPEC := [QNAME] SPECOBJ
 
 SPECOBJ := '{' RELATIONSHIP { LF RELATIONSHIP } '}'
 
