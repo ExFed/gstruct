@@ -2,11 +2,11 @@ package com.columnzero.gstruct
 
 import groovy.transform.*
 
-@Immutable
+@Canonical
 class GraphTriple {
-    CName subject
-    CName predicate
-    CName object
+    Object subject
+    Object predicate
+    Object object
 
     @Override
     String toString() {
@@ -18,7 +18,7 @@ class GraphTriple {
 class StructGraph {
     final def triples = []
 
-    public StructGraph put(CName subject, CName predicate, CName object) {
+    public StructGraph put(CName subject, CName predicate, Object object) {
         triples << new GraphTriple(subject, predicate, object)
         return this
     }
@@ -31,5 +31,15 @@ class GraphContext {
 
     GraphContext scope(CName name) {
         return new GraphContext(this.graph, name)
+    }
+
+    public GraphContext put(CName predicate, CName object) {
+        graph.put(name, predicate, object)
+        return this
+    }
+
+    public GraphContext putStr(CName predicate, String body) {
+        graph.put(name, predicate, body)
+        return this
     }
 }

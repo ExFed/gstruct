@@ -22,6 +22,12 @@ class DefaultNamespaceSpec implements NamespaceSpec {
         throw new MissingMethodException(methodName, this.getClass(), args)
     }
 
+
+    @Override
+    void setDescription(String body) {
+        $context.putStr(Relationships.DESCRIPTION, body)
+    }
+
     @Override
     void namespace(SpecParams params) {
         namespace(params.name, params.configurator)

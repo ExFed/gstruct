@@ -1,6 +1,11 @@
 package com.columnzero.gstruct
 
-interface NamespaceSpec {
+interface DocSpec {
+    // description = 'lorem ipsum'
+    void setDescription(String body)
+}
+
+interface NamespaceSpec extends DocSpec {
     final CName GLOBAL = Scopes.GLOBAL
 
     // namespace x.y.z { ... }
@@ -15,14 +20,9 @@ interface NamespaceSpec {
     void struct(Map names)
 }
 
-interface TypeSpec {
-    // description 'lorem ipsum'
-    void description(String body)
-
-    // description = 'lorem ipsum'
-    void setDescription(String body)
+interface TypeSpec extends DocSpec {
 }
 
-interface StructSpec {
+interface StructSpec extends DocSpec {
     void field(Map names)
 }

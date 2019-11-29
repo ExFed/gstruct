@@ -1,3 +1,4 @@
 namespace x.y.z {
     type foobar: GLOBAL.primitive
+    description = 'lorem ipsum'
 }

@@ -8,6 +8,11 @@ class DefaultStructSpec implements StructSpec {
     }
 
     @Override
+    void setDescription(String body) {
+        $context.putStr(Relationships.DESCRIPTION, body)
+    }
+
+    @Override
     void field(Map names) {
         throw new UnsupportedOperationException('todo')
     }

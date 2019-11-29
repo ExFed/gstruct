@@ -35,9 +35,11 @@ class DslMainTest extends Specification {
     def 'namespace parses'() {
         given:
             def dslFile = gStruct('namespace.gstruct')
-            def name = CName.of('/x/y/z/foobar')
+            def namespace = CName.of('/x/y/z')
+            def name = new CName('foobar', namespace)
             def expect = new StructGraph()
                 .put(name, TYPE, PRIMITIVE)
+                .put(namespace, DESCRIPTION, 'lorem ipsum')
 
         when:
             def actual = DslMain.parse(dslFile)

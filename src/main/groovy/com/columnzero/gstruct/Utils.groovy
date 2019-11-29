@@ -12,6 +12,7 @@ class Keywords {
 
 class Relationships {
     static final CName TYPE = new CName('is', Scopes.GLOBAL)
+    static final CName DESCRIPTION = new CName('describedBy', Scopes.GLOBAL)
 }
 
 @groovy.transform.Immutable
