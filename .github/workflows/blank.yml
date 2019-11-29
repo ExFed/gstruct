@@ -14,3 +14,8 @@ jobs:
         java-version: '11.0.5'
     - name: Build and check
       run: ./gradlew check
+    - name: Archive test report
+      uses: actions/upload-artifact@v1
+      with:
+        name: test-report
+        path: build/reports/tests/test
