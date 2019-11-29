@@ -31,6 +31,10 @@ class CName {
     String name
     CName namespace
 
+    CName div(String name) {
+        return new CName(name, this)
+    }
+
     String toString() {
         return toPath(this).join(DELIMITER)
     }

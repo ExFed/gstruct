@@ -1,7 +1,7 @@
 package com.columnzero.gstruct
 
 interface NamespaceSpec {
-    CName getGlobal()
+    final CName GLOBAL = Scopes.GLOBAL
 
     // namespace x.y.z { ... }
     void namespace(SpecParams params)

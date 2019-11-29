@@ -1,6 +1,7 @@
 package com.columnzero.gstruct
 
 class DefaultNamespaceSpec implements NamespaceSpec {
+
     private final GraphContext $context
 
     DefaultNamespaceSpec(GraphContext context) {
@@ -19,11 +20,6 @@ class DefaultNamespaceSpec implements NamespaceSpec {
             return new SpecParams(typeName, args[0])
         }
         throw new MissingMethodException(methodName, this.getClass(), args)
-    }
-
-    @Override
-    CName getGlobal() {
-        return Scopes.GLOBAL
     }
 
     @Override

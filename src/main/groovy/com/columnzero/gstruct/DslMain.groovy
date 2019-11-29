@@ -10,8 +10,6 @@ class DslMain {
             )
         ).parse(file)
 
-        def dsl = new DslMain()
-
         def rootContext = new GraphContext(new StructGraph(), Scopes.GLOBAL)
         def root = new DefaultNamespaceSpec(rootContext)
         script.setDelegate(root)
