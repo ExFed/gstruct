@@ -67,6 +67,11 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     @Override
     void struct(Map names) {
         names.each { name, configurator ->
+            // coerce name into CName
+            if (!(name instanceof CName)) {
+                name = new CName(name, $context.name)
+            }
+
             $context.graph.put(name, Relationships.TYPE, Keywords.STRUCT)
             def spec = new DefaultStructSpec($context.scope(name))
             configurator = configurator.rehydrate(spec, this, this)

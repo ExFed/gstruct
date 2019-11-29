@@ -60,7 +60,6 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
-    @Ignore
     def 'empty struct parses'() {
         given:
             def dslFile = gStruct 'empty_struct.gstruct'
