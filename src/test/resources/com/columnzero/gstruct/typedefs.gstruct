@@ -4,4 +4,6 @@ type bool : primitive
 
 type data : string,
     value : number,
-    fakeNews : bool
+    fakeNews : bool {
+        description = 'full of alternative facts'
+    }
