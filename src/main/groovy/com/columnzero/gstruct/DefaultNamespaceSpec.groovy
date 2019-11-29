@@ -22,18 +22,21 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     }
 
     @Override
-    void namespace(Map names) {
-        names.each { name, Closure configurator ->
-            // coerce name into CName
-            if (!(name instanceof CName)) {
-                name = new CName(name, $context.name)
-            }
+    CName getGlobal() {
+        return Scopes.GLOBAL
+    }
 
-            def spec = new DefaultNamespaceSpec(name, $context.graph)
-            configurator = configurator.rehydrate(spec, this, this)
-            configurator.resolveStrategy = Closure.DELEGATE_ONLY
-            configurator()
-        }
+    @Override
+    void namespace(SpecParams params) {
+        namespace(params.name, params.configurator)
+    }
+
+    @Override
+    void namespace(CName name, Closure configurator) {
+        def spec = new DefaultNamespaceSpec($context.scope(name))
+        configurator = configurator.rehydrate(spec, this, this)
+        configurator.resolveStrategy = Closure.DELEGATE_ONLY
+        configurator()
     }
 
     @Override

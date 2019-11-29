@@ -41,7 +41,7 @@ class CName {
 
     def methodMissing(String name, args) {
         if (args.size() == 1 && args[0] instanceof Closure) {
-            return [propertyMissing(name), args[0]]
+            return new SpecParams(propertyMissing(name), args[0])
         }
 
         throw new MissingMethodException(name, this.getClass(), args)
