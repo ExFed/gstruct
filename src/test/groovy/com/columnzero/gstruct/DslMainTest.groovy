@@ -46,7 +46,6 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
-    @Ignore
     def 'nested namespaces parse'() {
         given:
             def dslFile = gStruct('nested_namespaces.gstruct')
