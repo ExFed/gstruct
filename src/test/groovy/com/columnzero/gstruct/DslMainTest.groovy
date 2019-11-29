@@ -52,9 +52,9 @@ class DslMainTest extends Specification {
     def 'nested namespaces parse'() {
         given:
             def dslFile = gStruct('nested_namespaces.gstruct')
-            def namespace = CName.of('/x/y/z/foobar')
+            def name = CName.of('/x/y/z/foobar')
             def expect = new StructGraph()
-                .put(namespace, TYPE, PRIMITIVE)
+                .put(name, TYPE, PRIMITIVE)
 
         when:
             def actual = DslMain.parse(dslFile)
@@ -76,13 +76,16 @@ class DslMainTest extends Specification {
             actual == expect
     }
 
-    @Ignore
     def 'struct parses'() {
         given:
             def dslFile = gStruct 'struct.gstruct'
+            def objName = gn 'object'
+            def fieldName = CName.of('/object/data')
             def expect = new StructGraph()
-                .put(gn('object'), TYPE, STRUCT)
-                .put(CName.of('/object/data'), TYPE, PRIMITIVE)
+                .put(objName, TYPE, STRUCT)
+                .put(fieldName, TYPE, PRIMITIVE)
+                .put(objName, FIELD, fieldName)
+                .put(objName, DESCRIPTION, 'stuff and things')
 
         when:
             def actual = DslMain.parse(dslFile)

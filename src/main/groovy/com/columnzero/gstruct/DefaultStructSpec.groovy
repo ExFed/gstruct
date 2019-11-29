@@ -14,6 +14,14 @@ class DefaultStructSpec implements StructSpec {
 
     @Override
     void field(Map names) {
-        throw new UnsupportedOperationException('todo')
+        names.each { name, param ->
+            // coerce name into CName
+            if (!(name instanceof CName)) {
+                name = new CName(name, $context.name)
+            }
+
+            $context.put(Relationships.FIELD, name)
+            $context.graph.put(name, Relationships.TYPE, param)
+        }
     }
 }

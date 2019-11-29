@@ -1,3 +1,4 @@
-struct object {
-    primitive data
+struct object: {
+    description = 'stuff and things'
+    field data: GLOBAL.primitive
 }

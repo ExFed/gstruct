@@ -1,13 +1,13 @@
 package com.columnzero.gstruct
 
 interface DocSpec {
+    final CName GLOBAL = Scopes.GLOBAL
+
     // description = 'lorem ipsum'
     void setDescription(String body)
 }
 
 interface NamespaceSpec extends DocSpec {
-    final CName GLOBAL = Scopes.GLOBAL
-
     // namespace x.y.z { ... }
     void namespace(SpecParams params)
     void namespace(CName name, Closure configurator)
