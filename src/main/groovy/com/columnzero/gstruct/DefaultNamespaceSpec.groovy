@@ -35,7 +35,7 @@ class DefaultNamespaceSpec implements NamespaceSpec {
 
     @Override
     void namespace(FQName name, Closure configurator) {
-        def spec = new DefaultNamespaceSpec($context.scope(name))
+        def spec = new DefaultNamespaceSpec($context.rescope(name))
         configurator = configurator.rehydrate(spec, this, this)
         configurator.resolveStrategy = Closure.DELEGATE_ONLY
         configurator()
@@ -60,7 +60,7 @@ class DefaultNamespaceSpec implements NamespaceSpec {
                 $context.graph.put(name, Relationships.TYPE, param.name)
 
                 // spec needs to be configured; delegate to TypeSpec
-                def spec = new DefaultTypeSpec($context.scope(name))
+                def spec = new DefaultTypeSpec($context.rescope(name))
                 def configurator = param.configurator.rehydrate(spec, this, this)
                 configurator.resolveStrategy = Closure.DELEGATE_ONLY
                 configurator()
@@ -79,7 +79,7 @@ class DefaultNamespaceSpec implements NamespaceSpec {
             }
 
             $context.graph.put(name, Relationships.TYPE, Keywords.STRUCT)
-            def spec = new DefaultStructSpec($context.scope(name))
+            def spec = new DefaultStructSpec($context.rescope(name))
             configurator = configurator.rehydrate(spec, this, this)
             configurator.resolveStrategy = Closure.DELEGATE_ONLY
             configurator()
