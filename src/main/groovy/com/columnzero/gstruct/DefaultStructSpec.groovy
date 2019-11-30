@@ -15,9 +15,9 @@ class DefaultStructSpec implements StructSpec {
     @Override
     void field(Map names) {
         names.each { name, param ->
-            // coerce name into CName
-            if (!(name instanceof CName)) {
-                name = new CName(name, $context.name)
+            // coerce name into FQName
+            if (!(name instanceof FQName)) {
+                name = new FQName(name, $context.name)
             }
 
             $context.put(Relationships.FIELD, name)

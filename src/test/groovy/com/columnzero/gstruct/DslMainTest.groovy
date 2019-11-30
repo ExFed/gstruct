@@ -7,8 +7,8 @@ import static com.columnzero.gstruct.Relationships.*
 
 class DslMainTest extends Specification {
     // shorthand helper for names in the global namespace
-    private static def gn(String cName) {
-        return new CName(cName, Scopes.GLOBAL)
+    private static def gn(String name) {
+        return new FQName(name, Scopes.GLOBAL)
     }
 
     // shorthand helper to get a gStruct file
@@ -36,8 +36,8 @@ class DslMainTest extends Specification {
     def 'namespace parses'() {
         given:
             def dslFile = gStruct('namespace.gstruct')
-            def namespace = CName.of('/x/y/z')
-            def name = new CName('foobar', namespace)
+            def namespace = FQName.of('/x/y/z')
+            def name = new FQName('foobar', namespace)
             def expect = new StructGraph()
                 .put(name, TYPE, PRIMITIVE)
                 .put(namespace, DESCRIPTION, 'lorem ipsum')
@@ -52,7 +52,7 @@ class DslMainTest extends Specification {
     def 'nested namespaces parse'() {
         given:
             def dslFile = gStruct('nested_namespaces.gstruct')
-            def name = CName.of('/x/y/z/foobar')
+            def name = FQName.of('/x/y/z/foobar')
             def expect = new StructGraph()
                 .put(name, TYPE, PRIMITIVE)
 
@@ -80,7 +80,7 @@ class DslMainTest extends Specification {
         given:
             def dslFile = gStruct 'struct.gstruct'
             def objName = gn 'object'
-            def fieldName = CName.of('/object/data')
+            def fieldName = FQName.of('/object/data')
             def expect = new StructGraph()
                 .put(objName, TYPE, STRUCT)
                 .put(fieldName, TYPE, PRIMITIVE)

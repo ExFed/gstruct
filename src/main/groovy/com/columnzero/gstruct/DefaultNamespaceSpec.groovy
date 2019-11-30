@@ -8,14 +8,14 @@ class DefaultNamespaceSpec implements NamespaceSpec {
         this.$context = context
     }
 
-    // assume unknown properties are CNames
+    // assume unknown properties are FQNames
     def propertyMissing(String name) {
-        return new CName(name, $context.name)
+        return new FQName(name, $context.name)
     }
 
-    // assume unknown methods are CNames and Spec closures
+    // assume unknown methods are FQNames and Spec closures
     def methodMissing(String methodName, args) {
-        def typeName = new CName(methodName, $context.name)
+        def typeName = new FQName(methodName, $context.name)
         if (args.size() == 1 && args[0] instanceof Closure) {
             return new SpecParams(typeName, args[0])
         }
@@ -34,7 +34,7 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     }
 
     @Override
-    void namespace(CName name, Closure configurator) {
+    void namespace(FQName name, Closure configurator) {
         def spec = new DefaultNamespaceSpec($context.scope(name))
         configurator = configurator.rehydrate(spec, this, this)
         configurator.resolveStrategy = Closure.DELEGATE_ONLY
@@ -44,13 +44,13 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     @Override
     void type(Map names) {
         names.each { name, param ->
-            // coerce name into CName
-            if (!(name instanceof CName)) {
-                name = new CName(name, $context.name)
+            // coerce name into FQName
+            if (!(name instanceof FQName)) {
+                name = new FQName(name, $context.name)
             }
 
             // map name to spec
-            if (param instanceof CName) {
+            if (param instanceof FQName) {
                 // store the name mapping
                 $context.graph.put(name, Relationships.TYPE, param)
             } else if (param instanceof SpecParams) {
@@ -73,9 +73,9 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     @Override
     void struct(Map names) {
         names.each { name, configurator ->
-            // coerce name into CName
-            if (!(name instanceof CName)) {
-                name = new CName(name, $context.name)
+            // coerce name into FQName
+            if (!(name instanceof FQName)) {
+                name = new FQName(name, $context.name)
             }
 
             $context.graph.put(name, Relationships.TYPE, Keywords.STRUCT)

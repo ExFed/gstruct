@@ -3,44 +3,44 @@ package com.columnzero.gstruct
 import groovy.transform.*
 
 @Immutable(includePackage = false)
-class CName {
+class FQName {
     static final String DELIMITER = '/'
 
-    static CName of(String path) {
+    static FQName of(String path) {
         return of(path.split(DELIMITER))
     }
 
-    static CName of(String... path) {
+    static FQName of(String... path) {
         return of(path as List)
     }
 
-    static CName of(List path) {
+    static FQName of(List path) {
         if (path.size() == 0) {
             return null
         }
         if (path.size() == 1) {
-            return new CName(path[0], null)
+            return new FQName(path[0], null)
         }
-        return new CName(path[-1], of(path[0..-2]))
+        return new FQName(path[-1], of(path[0..-2]))
     }
 
-    static List toPath(CName cn) {
+    static List toPath(FQName cn) {
         return (cn.namespace ? toPath(cn.namespace) : []) + cn.name
     }
 
     String name
-    CName namespace
+    FQName namespace
 
-    CName div(String name) {
-        return new CName(name, this)
+    FQName div(String name) {
+        return new FQName(name, this)
     }
 
     String toString() {
         return toPath(this).join(DELIMITER)
     }
 
-    CName propertyMissing(String name) {
-        return new CName(name, this)
+    FQName propertyMissing(String name) {
+        return new FQName(name, this)
     }
 
     def methodMissing(String name, args) {

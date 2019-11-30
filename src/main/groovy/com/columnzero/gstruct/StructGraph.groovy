@@ -18,7 +18,7 @@ class GraphTriple {
 class StructGraph {
     final def triples = [] as Set
 
-    public StructGraph put(CName subject, CName predicate, Object object) {
+    public StructGraph put(FQName subject, FQName predicate, Object object) {
         triples << new GraphTriple(subject, predicate, object)
         return this
     }
@@ -27,18 +27,18 @@ class StructGraph {
 @Canonical
 class GraphContext {
     final StructGraph graph
-    final CName name
+    final FQName name
 
-    GraphContext scope(CName name) {
+    GraphContext scope(FQName name) {
         return new GraphContext(this.graph, name)
     }
 
-    public GraphContext put(CName predicate, CName object) {
+    public GraphContext put(FQName predicate, FQName object) {
         graph.put(name, predicate, object)
         return this
     }
 
-    public GraphContext putStr(CName predicate, String body) {
+    public GraphContext putStr(FQName predicate, String body) {
         graph.put(name, predicate, body)
         return this
     }

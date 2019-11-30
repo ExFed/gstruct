@@ -2,33 +2,33 @@ package com.columnzero.gstruct
 
 import spock.lang.Specification
 
-class CNameTest extends Specification {
+class FQNameTest extends Specification {
 
-    def "CName path"() {
+    def "FQName path"() {
         given:
-            def cn = new CName('leaf', new CName('inner', new CName('root', null)))
+            def cn = new FQName('leaf', new FQName('inner', new FQName('root', null)))
 
         expect:
-            CName.toPath(cn) == ['root', 'inner', 'leaf']
+            FQName.toPath(cn) == ['root', 'inner', 'leaf']
     }
 
-    def "CName path with empty root"() {
+    def "FQName path with empty root"() {
         given:
-            def cn = new CName('leaf', new CName('inner', new CName('', null)))
+            def cn = new FQName('leaf', new FQName('inner', new FQName('', null)))
 
         expect:
-            CName.toPath(cn) == ['', 'inner', 'leaf']
+            FQName.toPath(cn) == ['', 'inner', 'leaf']
     }
 
-    def "path parses to CName"() {
+    def "path parses to FQName"() {
         expect:
-            CName.of(path) == cn
+            FQName.of(path) == cn
 
         where:
             path << ['root/inner/leaf', '/root']
             cn << [
-                new CName('leaf', new CName('inner', new CName('root', null))),
-                new CName('root', new CName('', null))
+                new FQName('leaf', new FQName('inner', new FQName('root', null))),
+                new FQName('root', new FQName('', null))
             ]
     }
 }
