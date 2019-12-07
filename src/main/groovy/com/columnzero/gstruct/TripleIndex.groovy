@@ -13,7 +13,7 @@ class TripleIndex {
 
     TripleIndex(StructGraph graph) {
         spo = ([] as Set) + graph.triples // copy the triple set
-        spo.each { t ->
+        spo.each { GraphTriple t ->
             s[t.subject] << t
             p[t.predicate] << t
             o[t.object] << t
@@ -21,7 +21,6 @@ class TripleIndex {
             po[[t.predicate, t.object]] << t
             os[[t.object, t.subject]] << t
         }
-
     }
 
     Set<GraphTriple> findAll(Map filter) {
@@ -29,15 +28,15 @@ class TripleIndex {
     }
 
     Set<GraphTriple> findAll(subj = null, pred = null, obj = null) {
-        return findAllPrivate(subj, pred, obj).asUnmodifiable()
+        def filterFlags = (subj != null ? 0b100 : 0) \
+                        + (pred != null ? 0b010 : 0) \
+                        + (obj != null ? 0b001 : 0)
+
+        return findAllPrivate(subj, pred, obj, filterFlags).asUnmodifiable()
     }
 
-    private Set<GraphTriple> findAllPrivate(subj, pred, obj) {
-        def q = (subj != null ? 0b100 : 0) \
-            + (pred != null ? 0b010 : 0) \
-            + (obj != null ? 0b001 : 0)
-
-        switch(q) {
+    private Set<GraphTriple> findAllPrivate(subj, pred, obj, filterFlags) {
+        switch (filterFlags) {
             case 0b000:
                 return [] as Set
             case 0b100:
@@ -56,7 +55,7 @@ class TripleIndex {
                 def triple = new GraphTriple(subj, pred, obj)
                 return (triple in spo ? [triple] : []) as Set
             default:
-                throw new IndexOutOfBoundsException("Query index out of bounds: $q")
+                throw new IndexOutOfBoundsException("Filter flags out of bounds: $filterFlags")
         }
     }
 }
