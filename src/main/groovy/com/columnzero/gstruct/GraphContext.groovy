@@ -1,5 +1,7 @@
 package com.columnzero.gstruct
 
+import com.columnzero.gstruct.graph.StructGraph
+
 import groovy.transform.*
 
 @Canonical

@@ -2,6 +2,8 @@ package com.columnzero.gstruct
 
 import spock.lang.*
 
+import com.columnzero.gstruct.graph.*
+
 import static com.columnzero.gstruct.Keywords.*
 import static com.columnzero.gstruct.Relationships.*
 

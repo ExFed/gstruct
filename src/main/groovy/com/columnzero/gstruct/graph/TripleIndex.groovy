@@ -1,4 +1,4 @@
-package com.columnzero.gstruct
+package com.columnzero.gstruct.graph
 
 class TripleIndex {
     private final def s = [:].withDefault { [] as Set }

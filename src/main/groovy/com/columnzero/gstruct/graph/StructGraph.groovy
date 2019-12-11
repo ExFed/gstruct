@@ -1,4 +1,4 @@
-package com.columnzero.gstruct
+package com.columnzero.gstruct.graph
 
 import groovy.transform.*
 

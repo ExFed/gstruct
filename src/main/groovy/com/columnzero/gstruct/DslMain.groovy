@@ -2,6 +2,8 @@ package com.columnzero.gstruct
 
 import org.codehaus.groovy.control.CompilerConfiguration
 
+import com.columnzero.gstruct.graph.StructGraph
+
 class DslMain {
     static def parse(File file) {
         def script = new GroovyShell(
