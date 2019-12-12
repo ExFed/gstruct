@@ -6,7 +6,7 @@ import groovy.transform.*
 
 @Canonical
 class StructGraph {
-    final def triples = [] as Set
+    final def triples = [] as LinkedHashSet
 
     public StructGraph put(GraphTriple triple) {
         return put(triple.subject, triple.predicate, triple.object)

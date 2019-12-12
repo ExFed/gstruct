@@ -1,18 +1,18 @@
 package com.columnzero.gstruct.graph
 
 class TripleIndex {
-    private final def s = [:].withDefault { [] as Set }
-    private final def p = [:].withDefault { [] as Set }
-    private final def o = [:].withDefault { [] as Set }
+    private final def s = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
+    private final def p = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
+    private final def o = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
 
-    private final def sp = [:].withDefault { [] as Set }
-    private final def po = [:].withDefault { [] as Set }
-    private final def os = [:].withDefault { [] as Set }
+    private final def sp = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
+    private final def po = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
+    private final def os = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }
 
     private final def spo
 
     TripleIndex(StructGraph graph) {
-        spo = ([] as Set) + graph.triples // copy the triple set
+        spo = new LinkedHashSet(graph.triples) // copy the triple set to mitigate mutability
         spo.each { GraphTriple t ->
             s[t.subject] << t
             p[t.predicate] << t
@@ -38,7 +38,7 @@ class TripleIndex {
     private Set<GraphTriple> findAllPrivate(subj, pred, obj, filterFlags) {
         switch (filterFlags) {
             case 0b000:
-                return [] as Set
+                return Collections.emptySet()
             case 0b100:
                 return s[subj]
             case 0b010:
@@ -53,7 +53,7 @@ class TripleIndex {
                 return os[[obj, subj]]
             case 0b111:
                 def triple = new GraphTriple(subj, pred, obj)
-                return (triple in spo ? [triple] : []) as Set
+                return triple in spo ? [triple] as LinkedHashSet : Collections.emptySet()
             default:
                 throw new IndexOutOfBoundsException("Filter flags out of bounds: $filterFlags")
         }
