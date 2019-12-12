@@ -1,25 +1,8 @@
 package com.columnzero.gstruct.graph
 
+import com.columnzero.gstruct.FQName
+
 import groovy.transform.*
-
-@Canonical
-class GraphTriple {
-    final Object subject
-    final Object predicate
-    final Object object
-
-    @Override
-    String toString() {
-        return "<$subject><$predicate><$object>"
-    }
-
-    def asType(Class clazz) {
-        if (clazz == List) {
-            return [subject, predicate, object]
-        }
-        throw new ClassCastException("Cannot convert ${this.getClass()} to $clazz")
-    }
-}
 
 @Canonical
 class StructGraph {
@@ -29,7 +12,7 @@ class StructGraph {
         return put(triple.subject, triple.predicate, triple.object)
     }
 
-    public StructGraph put(subject, predicate, object) {
+    public StructGraph put(FQName subject, FQName predicate, Object object) {
         triples << new GraphTriple(subject, predicate, object)
         return this
     }
