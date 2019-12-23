@@ -1,11 +1,10 @@
 plugins {
     id 'groovy'
     id 'java-library'
+    id 'jacoco'
 }
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     jcenter()
 }
 
