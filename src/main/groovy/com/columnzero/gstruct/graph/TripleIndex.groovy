@@ -24,7 +24,10 @@ class TripleIndex {
     }
 
     Set<GraphTriple> findAll(Map filter) {
-        return findAll(filter.subj, filter.pred, filter.obj)
+        def subj = filter.s ?: filter.subj ?: filter.subject
+        def pred = filter.p ?: filter.pred ?: filter.predicate
+        def obj = filter.o ?: filter.obj ?: filter.object
+        return findAll(subj, pred, obj)
     }
 
     Set<GraphTriple> findAll(subj = null, pred = null, obj = null) {
