@@ -13,7 +13,7 @@ class TripleIndex {
 
     TripleIndex(StructGraph graph) {
         spo = new LinkedHashSet(graph.triples) // copy the triple set to mitigate mutability
-        spo.each { GraphTriple t ->
+        spo.each { Triple t ->
             s[t.subject] << t
             p[t.predicate] << t
             o[t.object] << t
@@ -23,21 +23,21 @@ class TripleIndex {
         }
     }
 
-    Set<GraphTriple> findAll(Map filter) {
+    Set<Triple> findAll(Map filter) {
         def subj = filter.s ?: filter.subj ?: filter.subject
         def pred = filter.p ?: filter.pred ?: filter.predicate
         def obj = filter.o ?: filter.obj ?: filter.object
         return findAll(subj, pred, obj)
     }
 
-    Set<GraphTriple> findAll(subj = null, pred = null, obj = null) {
+    Set<Triple> findAll(subj = null, pred = null, obj = null) {
         def filterFlags = (subj != null ? 0b100 : 0) \
                         + (pred != null ? 0b010 : 0) \
                         + (obj != null ? 0b001 : 0)
         return findAllPrivate(subj, pred, obj, filterFlags).asUnmodifiable()
     }
 
-    private Set<GraphTriple> findAllPrivate(subj, pred, obj, int filterFlags) {
+    private Set<Triple> findAllPrivate(subj, pred, obj, int filterFlags) {
         switch (filterFlags) {
             case 0b000:
                 return new LinkedHashSet(spo)
@@ -54,7 +54,7 @@ class TripleIndex {
             case 0b101:
                 return os[[obj, subj]]
             case 0b111:
-                def triple = new GraphTriple(subj, pred, obj)
+                def triple = new Triple(subj, pred, obj)
                 return triple in spo ? Collections.singleton(triple) : Collections.emptySet()
             default:
                 throw new IndexOutOfBoundsException("Filter flags out of bounds: $filterFlags")

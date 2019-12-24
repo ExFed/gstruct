@@ -5,7 +5,7 @@ import com.columnzero.gstruct.FQName
 import groovy.transform.*
 
 @Canonical
-class GraphTriple {
+class Triple {
     final FQName subject
     final FQName predicate
     final Object object

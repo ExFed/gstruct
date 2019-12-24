@@ -13,9 +13,9 @@ class TripleIndexTest extends Specification {
     static final def y = FQName.of('y')
     static final def z = FQName.of('z')
 
-    static final def abc = new GraphTriple(a, b, c)
-    static final def cba = new GraphTriple(c, b, a)
-    static final def xyz = new GraphTriple(x, y, z)
+    static final def abc = new Triple(a, b, c)
+    static final def cba = new Triple(c, b, a)
+    static final def xyz = new Triple(x, y, z)
 
     @Unroll
     def 'index finds #filter -> #expected'() {
