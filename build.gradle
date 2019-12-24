@@ -16,3 +16,5 @@ dependencies {
 }
 
 test.testLogging.showStandardStreams = true
+
+tasks.check.dependsOn jacocoTestReport

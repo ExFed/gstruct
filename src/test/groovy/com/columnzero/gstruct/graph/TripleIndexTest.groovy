@@ -15,9 +15,7 @@ class TripleIndexTest extends Specification {
 
     static final def abc = new GraphTriple(a, b, c)
     static final def cba = new GraphTriple(c, b, a)
-    static final def cxx = new GraphTriple(c, x, x)
     static final def xyz = new GraphTriple(x, y, z)
-    static final def yzy = new GraphTriple(y, z, y)
 
     @Unroll
     def 'index finds #filter -> #expected'() {
@@ -25,12 +23,15 @@ class TripleIndexTest extends Specification {
         def sg = new StructGraph()
             .put(abc as List)
             .put(cba as List)
+            .put(xyz as List)
 
         expect:
         new TripleIndex(sg).findAll(filter) == expected as Set
 
         where:
         filter                  | expected
+
+        [:] | [abc, cba, xyz]
 
         [subj: a]             | [abc]
         [subj: b]             | []

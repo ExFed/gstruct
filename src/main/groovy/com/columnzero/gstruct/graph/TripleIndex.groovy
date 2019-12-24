@@ -34,14 +34,13 @@ class TripleIndex {
         def filterFlags = (subj != null ? 0b100 : 0) \
                         + (pred != null ? 0b010 : 0) \
                         + (obj != null ? 0b001 : 0)
-
         return findAllPrivate(subj, pred, obj, filterFlags).asUnmodifiable()
     }
 
-    private Set<GraphTriple> findAllPrivate(subj, pred, obj, filterFlags) {
+    private Set<GraphTriple> findAllPrivate(subj, pred, obj, int filterFlags) {
         switch (filterFlags) {
             case 0b000:
-                return Collections.emptySet()
+                return new LinkedHashSet(spo)
             case 0b100:
                 return s[subj]
             case 0b010:
@@ -56,7 +55,7 @@ class TripleIndex {
                 return os[[obj, subj]]
             case 0b111:
                 def triple = new GraphTriple(subj, pred, obj)
-                return triple in spo ? [triple] as LinkedHashSet : Collections.emptySet()
+                return triple in spo ? Collections.singleton(triple) : Collections.emptySet()
             default:
                 throw new IndexOutOfBoundsException("Filter flags out of bounds: $filterFlags")
         }
