@@ -9,11 +9,11 @@ class Graph {
     final def triples = [] as LinkedHashSet
 
     public Graph put(Triple triple) {
-        return put(triple.subject, triple.predicate, triple.object)
+        triples << triple
+        return this
     }
 
     public Graph put(FQName subject, FQName predicate, Object object) {
-        triples << new Triple(subject, predicate, object)
-        return this
+        return put(new Triple(subject, predicate, object))
     }
 }
