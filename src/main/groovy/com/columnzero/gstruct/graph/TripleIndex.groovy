@@ -11,7 +11,7 @@ class TripleIndex {
 
     private final def spo
 
-    TripleIndex(StructGraph graph) {
+    TripleIndex(Graph graph) {
         spo = new LinkedHashSet(graph.triples) // copy the triple set to mitigate mutability
         spo.each { Triple t ->
             s[t.subject] << t
@@ -69,7 +69,7 @@ class TripleIndex {
         return spo.containsAll(triples)
     }
 
-    boolean isCase(StructGraph graph) {
+    boolean isCase(Graph graph) {
         return graph.triples in this
     }
 }

@@ -20,7 +20,7 @@ class TripleIndexTest extends Specification {
 
     def 'triple is in index'() {
         given:
-        def index = new TripleIndex(new StructGraph()
+        def index = new TripleIndex(new Graph()
             .put(abc)
             .put(cba)
             .put(xyz))
@@ -31,7 +31,7 @@ class TripleIndexTest extends Specification {
 
     def 'triple is not in index'() {
         given:
-        def index = new TripleIndex(new StructGraph()
+        def index = new TripleIndex(new Graph()
             .put(abc)
             .put(cba)
             .put(xyz))
@@ -42,11 +42,11 @@ class TripleIndexTest extends Specification {
 
     def 'subgraph is in index'() {
         given:
-        def index = new TripleIndex(new StructGraph()
+        def index = new TripleIndex(new Graph()
             .put(abc)
             .put(cba)
             .put(xyz))
-        def subg = new StructGraph()
+        def subg = new Graph()
             .put(abc)
             .put(xyz)
 
@@ -56,11 +56,11 @@ class TripleIndexTest extends Specification {
 
     def 'subgraph is not in index'() {
         given:
-        def index = new TripleIndex(new StructGraph()
+        def index = new TripleIndex(new Graph()
             .put(abc)
             .put(cba)
             .put(xyz))
-        def subg = new StructGraph()
+        def subg = new Graph()
             .put(abc)
             .put(xyz)
             .put(az42)
@@ -72,7 +72,7 @@ class TripleIndexTest extends Specification {
     @Unroll
     def 'index finds #filter -> #expected'() {
         setup:
-        def index = new TripleIndex(new StructGraph()
+        def index = new TripleIndex(new Graph()
             .put(abc)
             .put(cba)
             .put(xyz))

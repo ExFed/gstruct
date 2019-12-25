@@ -2,7 +2,7 @@ package com.columnzero.gstruct
 
 import org.codehaus.groovy.control.CompilerConfiguration
 
-import com.columnzero.gstruct.graph.StructGraph
+import com.columnzero.gstruct.graph.Graph
 
 class DslMain {
     static def parse(File file) {
@@ -12,7 +12,7 @@ class DslMain {
             )
         ).parse(file)
 
-        def rootContext = new GraphContext(new StructGraph(), Scopes.GLOBAL)
+        def rootContext = new GraphContext(new Graph(), Scopes.GLOBAL)
         def root = new DefaultNamespaceSpec(rootContext)
         script.setDelegate(root)
         script.run()

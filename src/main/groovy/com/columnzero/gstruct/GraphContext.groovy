@@ -1,12 +1,12 @@
 package com.columnzero.gstruct
 
-import com.columnzero.gstruct.graph.StructGraph
+import com.columnzero.gstruct.graph.Graph
 
 import groovy.transform.*
 
 @Canonical
 class GraphContext {
-    final StructGraph graph
+    final Graph graph
     final FQName name
 
     GraphContext rescope(FQName name) {

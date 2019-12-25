@@ -5,14 +5,14 @@ import com.columnzero.gstruct.FQName
 import groovy.transform.*
 
 @Canonical
-class StructGraph {
+class Graph {
     final def triples = [] as LinkedHashSet
 
-    public StructGraph put(Triple triple) {
+    public Graph put(Triple triple) {
         return put(triple.subject, triple.predicate, triple.object)
     }
 
-    public StructGraph put(FQName subject, FQName predicate, Object object) {
+    public Graph put(FQName subject, FQName predicate, Object object) {
         triples << new Triple(subject, predicate, object)
         return this
     }
