@@ -16,17 +16,69 @@ class TripleIndexTest extends Specification {
     static final def abc = new Triple(a, b, c)
     static final def cba = new Triple(c, b, a)
     static final def xyz = new Triple(x, y, z)
+    static final def az42 = new Triple(a, z, 42)
+
+    def 'triple is in index'() {
+        given:
+        def index = new TripleIndex(new StructGraph()
+            .put(abc)
+            .put(cba)
+            .put(xyz))
+
+        expect:
+        new Triple(a, b, c) in index
+    }
+
+    def 'triple is not in index'() {
+        given:
+        def index = new TripleIndex(new StructGraph()
+            .put(abc)
+            .put(cba)
+            .put(xyz))
+
+        expect:
+        az42 in index == false
+    }
+
+    def 'subgraph is in index'() {
+        given:
+        def index = new TripleIndex(new StructGraph()
+            .put(abc)
+            .put(cba)
+            .put(xyz))
+        def subg = new StructGraph()
+            .put(abc)
+            .put(xyz)
+
+        expect:
+        subg in index
+    }
+
+    def 'subgraph is not in index'() {
+        given:
+        def index = new TripleIndex(new StructGraph()
+            .put(abc)
+            .put(cba)
+            .put(xyz))
+        def subg = new StructGraph()
+            .put(abc)
+            .put(xyz)
+            .put(az42)
+
+        expect:
+        subg in index == false
+    }
 
     @Unroll
     def 'index finds #filter -> #expected'() {
         setup:
-        def sg = new StructGraph()
-            .put(abc as List)
-            .put(cba as List)
-            .put(xyz as List)
+        def index = new TripleIndex(new StructGraph()
+            .put(abc)
+            .put(cba)
+            .put(xyz))
 
         expect:
-        new TripleIndex(sg).findAll(filter) == expected as Set
+        index.findAll(filter) == expected as Set
 
         where:
         filter | expected

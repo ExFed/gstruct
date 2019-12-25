@@ -60,4 +60,16 @@ class TripleIndex {
                 throw new IndexOutOfBoundsException("Filter flags out of bounds: $filterFlags")
         }
     }
+
+    boolean isCase(Triple triple) {
+        return spo.contains(triple)
+    }
+
+    boolean isCase(Collection<Triple> triples) {
+        return spo.containsAll(triples)
+    }
+
+    boolean isCase(StructGraph graph) {
+        return graph.triples in this
+    }
 }
