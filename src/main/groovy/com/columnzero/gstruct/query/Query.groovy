@@ -1,6 +1,8 @@
 package com.columnzero.gstruct.query
 
 import com.columnzero.gstruct.FQName
+import com.columnzero.gstruct.graph.TripleIndex
+import com.columnzero.gstruct.graph.Triple
 
 import groovy.transform.*
 
