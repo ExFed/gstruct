@@ -1,5 +1,8 @@
 package com.columnzero.gstruct
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class DefaultStructSpec implements StructSpec {
     private final GraphContext $context
 
@@ -13,15 +16,18 @@ class DefaultStructSpec implements StructSpec {
     }
 
     @Override
-    void field(Map names) {
+    void field(Map<FQName, Object> names) {
         names.each { name, param ->
+            def fqname
             // coerce name into FQName
             if (!(name instanceof FQName)) {
-                name = new FQName(name, $context.name)
+                fqname = new FQName(name as String, $context.name)
+            } else {
+                fqname = name as FQName
             }
 
-            $context.put(Relationships.FIELD, name)
-            $context.graph.put(name, Relationships.TYPE, param)
+            $context.put(Relationships.FIELD, fqname)
+            $context.graph.put(fqname, Relationships.TYPE, param)
         }
     }
 }

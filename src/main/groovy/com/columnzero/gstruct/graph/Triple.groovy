@@ -4,6 +4,7 @@ import com.columnzero.gstruct.FQName
 
 import groovy.transform.*
 
+@CompileStatic
 @Canonical
 class Triple {
     final FQName subject

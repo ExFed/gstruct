@@ -1,5 +1,8 @@
 package com.columnzero.gstruct
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 interface DocSpec {
     final FQName GLOBAL = Scopes.GLOBAL
 
@@ -7,6 +10,7 @@ interface DocSpec {
     void setDescription(String body)
 }
 
+@CompileStatic
 interface NamespaceSpec extends DocSpec {
     // namespace x.y.z { ... }
     void namespace(SpecParams params)
@@ -20,9 +24,11 @@ interface NamespaceSpec extends DocSpec {
     void struct(Map names)
 }
 
+@CompileStatic
 interface TypeSpec extends DocSpec {
 }
 
+@CompileStatic
 interface StructSpec extends DocSpec {
     void field(Map names)
 }

@@ -4,9 +4,10 @@ import com.columnzero.gstruct.FQName
 
 import groovy.transform.*
 
+@CompileStatic
 @Canonical
 class Graph {
-    final def triples = [] as LinkedHashSet
+    final Set<Triple> triples = [] as LinkedHashSet
 
     public Graph put(Triple triple) {
         triples << triple

@@ -1,5 +1,8 @@
 package com.columnzero.gstruct
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class DefaultTypeSpec implements TypeSpec {
     private final GraphContext $context
 

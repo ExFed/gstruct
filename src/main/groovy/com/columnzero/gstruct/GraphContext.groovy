@@ -4,6 +4,7 @@ import com.columnzero.gstruct.graph.Graph
 
 import groovy.transform.*
 
+@CompileStatic
 @Canonical
 class GraphContext {
     final Graph graph
