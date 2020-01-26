@@ -4,31 +4,41 @@ import spock.lang.Specification
 
 class FQNameTest extends Specification {
 
+    static final def ROOT = new FQName('', null)
+
     def "FQName path"() {
         given:
-            def cn = new FQName('leaf', new FQName('inner', new FQName('root', null)))
+            def fqn = new FQName('leaf', new FQName('inner2', new FQName('inner1', null)))
 
         expect:
-            FQName.toPath(cn) == ['root', 'inner', 'leaf']
+            FQName.toPath(fqn) == ['inner1', 'inner2', 'leaf']
     }
 
-    def "FQName path with empty root"() {
+    def "FQName path with empty inner1"() {
         given:
-            def cn = new FQName('leaf', new FQName('inner', new FQName('', null)))
+            def fqn = new FQName('leaf', new FQName('inner2', ROOT))
 
         expect:
-            FQName.toPath(cn) == ['', 'inner', 'leaf']
+            FQName.toPath(fqn) == ['', 'inner2', 'leaf']
     }
 
     def "path parses to FQName"() {
         expect:
-            FQName.of(path) == cn
+            FQName.of(path) == fqn
 
         where:
-            path << ['root/inner/leaf', '/root']
-            cn << [
-                new FQName('leaf', new FQName('inner', new FQName('root', null))),
-                new FQName('root', new FQName('', null))
+            path << [
+                'inner1/inner2/leaf',
+                '/inner'
             ]
+            fqn << [
+                new FQName('leaf', new FQName('inner2', new FQName('inner1', null))),
+                new FQName('inner', ROOT)
+            ]
+    }
+
+    def "div parses"() {
+        expect:
+            ROOT / 'inner' / 'leaf' == FQName.of('/inner/leaf')
     }
 }
