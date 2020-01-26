@@ -25,31 +25,31 @@ class FQName {
         return new FQName(path[-1], of(path[0..<-1]))
     }
 
-    static List toPath(FQName cn) {
-        return (cn.namespace ? toPath(cn.namespace) : []) + cn.name
+    static List toPath(FQName fqn) {
+        return (fqn.namespace ? toPath(fqn.namespace) : []) + fqn.basename
     }
 
-    String name
+    String basename
     FQName namespace
 
-    FQName div(String name) {
-        return new FQName(name, this)
+    FQName div(String basename) {
+        return new FQName(basename, this)
     }
 
     String toString() {
         return toPath(this).join(DELIMITER)
     }
 
-    FQName propertyMissing(String name) {
-        return new FQName(name, this)
+    FQName propertyMissing(String basename) {
+        return new FQName(basename, this)
     }
 
-    def methodMissing(String name, Object argsObj) {
+    def methodMissing(String basename, Object argsObj) {
         def args = argsObj as Object[]
         if (args.size() == 1 && args[0] instanceof Closure) {
-            return new SpecParams(propertyMissing(name), (Closure) args[0])
+            return new SpecParams(propertyMissing(basename), (Closure) args[0])
         }
 
-        throw new MissingMethodException(name, this.getClass(), args)
+        throw new MissingMethodException(basename, this.getClass(), args)
     }
 }

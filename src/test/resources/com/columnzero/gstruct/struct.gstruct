@@ -1,4 +1,4 @@
-struct object: {
+struct Object: {
     description = 'stuff and things'
-    field data: GLOBAL.primitive
+    field data: GLOBAL.Primitive
 }

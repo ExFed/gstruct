@@ -1,9 +1,12 @@
-type string : primitive
-type number : primitive
-type bool : primitive
+type String : Primitive
+type Number : Primitive
+type Bool : Primitive
 
-type data : string,
-    value : number,
-    fakeNews : bool {
+type StringLike : String // test collision w/ default import (java.lang.String)
+type NumberLike : Number // test collision w/ default import (java.lang.Number)
+
+type Data : 'String',
+    Value : 'Number',
+    FakeNews : Bool {
         description = 'full of alternative facts'
     }

@@ -22,13 +22,15 @@ class DslMainTest extends Specification {
         given:
             def dslFile = gStruct('typedefs.gstruct')
             def expect = new Graph()
-                .put(gn('string'), TYPE, PRIMITIVE)
-                .put(gn('number'), TYPE, PRIMITIVE)
-                .put(gn('bool'), TYPE, PRIMITIVE)
-                .put(gn('data'), TYPE, gn('string'))
-                .put(gn('value'), TYPE, gn('number'))
-                .put(gn('fakeNews'), TYPE, gn('bool'))
-                .put(gn('fakeNews'), DESCRIPTION, 'full of alternative facts')
+                .put(gn('String'), TYPE, PRIMITIVE)
+                .put(gn('Number'), TYPE, PRIMITIVE)
+                .put(gn('Bool'), TYPE, PRIMITIVE)
+                .put(gn('StringLike'), TYPE, gn('String'))
+                .put(gn('NumberLike'), TYPE, gn('Number'))
+                .put(gn('Data'), TYPE, gn('String'))
+                .put(gn('Value'), TYPE, gn('Number'))
+                .put(gn('FakeNews'), TYPE, gn('Bool'))
+                .put(gn('FakeNews'), DESCRIPTION, 'full of alternative facts')
         when:
             def actual = DslMain.parse(dslFile)
         then:
@@ -39,7 +41,7 @@ class DslMainTest extends Specification {
         given:
             def dslFile = gStruct('namespace.gstruct')
             def namespace = FQName.of('/x/y/z')
-            def name = new FQName('foobar', namespace)
+            def name = new FQName('FooBar', namespace)
             def expect = new Graph()
                 .put(name, TYPE, PRIMITIVE)
                 .put(namespace, DESCRIPTION, 'lorem ipsum')
@@ -54,7 +56,7 @@ class DslMainTest extends Specification {
     def 'nested namespaces parse'() {
         given:
             def dslFile = gStruct('nested_namespaces.gstruct')
-            def name = FQName.of('/x/y/z/foobar')
+            def name = FQName.of('/x/y/z/FooBar')
             def expect = new Graph()
                 .put(name, TYPE, PRIMITIVE)
 
@@ -69,7 +71,7 @@ class DslMainTest extends Specification {
         given:
             def dslFile = gStruct 'empty_struct.gstruct'
             def expect = new Graph()
-                .put(gn('empty'), TYPE, STRUCT)
+                .put(gn('Empty'), TYPE, STRUCT)
 
         when:
             def actual = DslMain.parse(dslFile)
@@ -81,8 +83,8 @@ class DslMainTest extends Specification {
     def 'struct parses'() {
         given:
             def dslFile = gStruct 'struct.gstruct'
-            def objName = gn 'object'
-            def fieldName = FQName.of('/object/data')
+            def objName = gn 'Object'
+            def fieldName = FQName.of('/Object/data')
             def expect = new Graph()
                 .put(objName, TYPE, STRUCT)
                 .put(fieldName, TYPE, PRIMITIVE)

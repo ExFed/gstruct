@@ -1,7 +1,7 @@
 namespace x {
     namespace y {
         namespace z {
-            type foobar: GLOBAL.primitive
+            type FooBar: GLOBAL.Primitive
         }
     }
 }

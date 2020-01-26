@@ -8,7 +8,7 @@ class Scopes {
 
 @groovy.transform.CompileStatic
 class Keywords {
-    static final FQName PRIMITIVE = new FQName('primitive', Scopes.GLOBAL)
+    static final FQName PRIMITIVE = new FQName('Primitive', Scopes.GLOBAL)
     static final FQName STRUCT = new FQName('struct', Scopes.GLOBAL)
 }
 

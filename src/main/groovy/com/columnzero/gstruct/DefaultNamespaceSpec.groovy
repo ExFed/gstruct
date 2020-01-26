@@ -49,6 +49,11 @@ class DefaultNamespaceSpec implements NamespaceSpec {
                 name = new FQName(name, $context.name)
             }
 
+            // coerce param into FQName if it's a String
+            if (param instanceof String) {
+                param = new FQName(param, $context.name)
+            }
+
             // map name to spec
             if (param instanceof FQName) {
                 // store the name mapping
