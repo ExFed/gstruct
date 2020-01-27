@@ -6,12 +6,12 @@ import spock.lang.*
 
 class TripleIndexTest extends Specification {
 
-    static final def a = FQName.of('a')
-    static final def b = FQName.of('b')
-    static final def c = FQName.of('c')
-    static final def x = FQName.of('x')
-    static final def y = FQName.of('y')
-    static final def z = FQName.of('z')
+    static final def a = FQName.of('/a')
+    static final def b = FQName.of('/b')
+    static final def c = FQName.of('/c')
+    static final def x = FQName.of('/x')
+    static final def y = FQName.of('/y')
+    static final def z = FQName.of('/z')
 
     static final def abc = new Triple(a, b, c)
     static final def cba = new Triple(c, b, a)

@@ -6,9 +6,9 @@ import spock.lang.*
 
 class TripleTest extends Specification {
 
-    static final def a = FQName.of('a')
-    static final def b = FQName.of('b')
-    static final def c = FQName.of('c')
+    static final def a = FQName.of('/a')
+    static final def b = FQName.of('/b')
+    static final def c = FQName.of('/c')
 
     def 'as String'() {
         given:

@@ -5,28 +5,23 @@ import groovy.transform.*
 @CompileStatic
 @Immutable(includePackage = false)
 class FQName {
+    static final FQName ROOT = new FQName('', null)
+
     static final String DELIMITER = '/'
 
-    static FQName of(String path) {
-        return of(path.split(DELIMITER))
-    }
-
-    static FQName of(String... path) {
-        return of(path as List)
-    }
-
-    static FQName of(List<String> path) {
-        if (path.size() == 0) {
-            return null
+    /**
+     * Creates a new instance from the given absolute path string.
+     */
+    static FQName of(String absolutePath) {
+        if (absolutePath.isEmpty()) {
+            throw new IllegalArgumentException("Cannot parse empty path")
         }
-        if (path.size() == 1) {
-            return new FQName(path[0], null)
-        }
-        return new FQName(path[-1], of(path[0..<-1]))
-    }
 
-    static List toPath(FQName fqn) {
-        return (fqn.namespace ? toPath(fqn.namespace) : []) + fqn.basename
+        if (!absolutePath.startsWith(DELIMITER)) {
+            throw new IllegalArgumentException("Cannot parse relative path: $absolutePath")
+        }
+
+        return ROOT.path(absolutePath.substring(DELIMITER.length()))
     }
 
     String basename
@@ -37,7 +32,7 @@ class FQName {
     }
 
     String toString() {
-        return toPath(this).join(DELIMITER)
+        return this.toPath().join(DELIMITER)
     }
 
     FQName propertyMissing(String basename) {
@@ -51,5 +46,24 @@ class FQName {
         }
 
         throw new MissingMethodException(basename, this.getClass(), args)
+    }
+
+    /**
+     * Creates a path list.
+     */
+    List<String> toPath() {
+        return (namespace?.toPath() ?: []) + basename
+    }
+
+    /**
+     * Creates a new name from the given path string. Path may be relative or absolute.
+     */
+    FQName path(String path) {
+        // if the path explicitly declares it is absolute, parse relative to ROOT
+        if (path.startsWith(DELIMITER)) {
+            return ROOT.path(path.substring(DELIMITER.length()))
+        }
+
+        return path.tokenize(DELIMITER).inject(this) { ns, bn -> new FQName(bn, ns) }
     }
 }
