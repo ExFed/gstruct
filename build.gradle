@@ -1,5 +1,7 @@
 plugins {
+    id 'base'
     id 'idea'
+    id 'jacoco'
 }
 
 group 'com.columnzero.gstruct'
@@ -8,5 +10,39 @@ version '0.1'
 allprojects {
     repositories {
         jcenter()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+
+    rootProject.check.dependsOn test
+}
+
+task jacocoMerge(type: JacocoMerge) {
+    subprojects.each {
+        executionData it.tasks.withType(Test)
+    }
+    doFirst {
+        executionData = files(executionData.findAll { it.exists() })
+    }
+}
+
+task jacocoRootReport(type: JacocoReport) {
+    group = 'Verification'
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn subprojects.test, jacocoMerge
+
+    additionalSourceDirs.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(subprojects.sourceSets.main.output)
+    executionData.from = jacocoMerge.destinationFile
+
+    reports {
+        html.enabled = true
+        html.destination = file("$buildDir/reports/jacoco/html")
+        xml.enabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
     }
 }
