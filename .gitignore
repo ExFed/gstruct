@@ -1,6 +1,7 @@
 # Gradle caches and build outputs
 .gradle
 bin
+out
 build
 
 # IDE metadata
