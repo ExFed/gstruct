@@ -1,5 +1,7 @@
 package com.columnzero.gstruct
 
+import static groovy.lang.Closure.DELEGATE_ONLY
+
 class DefaultNamespaceSpec implements NamespaceSpec {
 
     private final GraphContext $context
@@ -14,14 +16,14 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     }
 
     // assume unknown methods are FQNames and Spec closures
-    def methodMissing(String methodName, args) {
+    def methodMissing(String methodName, Object argsObj) {
+        def args = argsObj as Object[]
         def typeName = new FQName(methodName, $context.name)
         if (args.size() == 1 && args[0] instanceof Closure) {
-            return new SpecParams(typeName, args[0])
+            return new SpecParams(typeName, args[0] as Closure)
         }
         throw new MissingMethodException(methodName, this.getClass(), args)
     }
-
 
     @Override
     void setDescription(String body) {
@@ -34,25 +36,21 @@ class DefaultNamespaceSpec implements NamespaceSpec {
     }
 
     @Override
-    void namespace(FQName name, Closure configurator) {
+    void namespace(FQName name, Closure cfgtor) {
         def spec = new DefaultNamespaceSpec($context.rescope(name))
-        configurator = configurator.rehydrate(spec, this, this)
-        configurator.resolveStrategy = Closure.DELEGATE_ONLY
+        def configurator = cfgtor.rehydrate(spec, this, this)
+        configurator.resolveStrategy = DELEGATE_ONLY
         configurator()
     }
 
     @Override
     void type(Map names) {
-        names.each { name, param ->
+        names.each { n, p ->
             // coerce name into FQName
-            if (!(name instanceof FQName)) {
-                name = new FQName(name, $context.name)
-            }
+            def name = n instanceof FQName ? n : new FQName(n as String, $context.name)
 
             // coerce param into FQName if it's a String
-            if (param instanceof String) {
-                param = new FQName(param, $context.name)
-            }
+            def param = p instanceof String ? new FQName(p, $context.name) : p
 
             // map name to spec
             if (param instanceof FQName) {
@@ -67,7 +65,7 @@ class DefaultNamespaceSpec implements NamespaceSpec {
                 // spec needs to be configured; delegate to TypeSpec
                 def spec = new DefaultTypeSpec($context.rescope(name))
                 def configurator = param.configurator.rehydrate(spec, this, this)
-                configurator.resolveStrategy = Closure.DELEGATE_ONLY
+                configurator.resolveStrategy = DELEGATE_ONLY
                 configurator()
             } else {
                 throw new DslException("Cannot map name <$name> to type: $param")
@@ -77,16 +75,14 @@ class DefaultNamespaceSpec implements NamespaceSpec {
 
     @Override
     void struct(Map names) {
-        names.each { name, configurator ->
+        names.each { n, cfgtor ->
             // coerce name into FQName
-            if (!(name instanceof FQName)) {
-                name = new FQName(name, $context.name)
-            }
+            def name = n instanceof FQName ? n : new FQName(n as String, $context.name)
 
             $context.graph.put(name, Relationships.TYPE, Keywords.STRUCT)
             def spec = new DefaultStructSpec($context.rescope(name))
-            configurator = configurator.rehydrate(spec, this, this)
-            configurator.resolveStrategy = Closure.DELEGATE_ONLY
+            def configurator = (cfgtor as Closure).rehydrate(spec, this, this)
+            configurator.resolveStrategy = DELEGATE_ONLY
             configurator()
         }
     }

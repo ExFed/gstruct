@@ -30,5 +30,5 @@ interface TypeSpec extends DocSpec {
 
 @CompileStatic
 interface StructSpec extends DocSpec {
-    void field(Map names)
+    void field(Map<FQName, Object> names)
 }

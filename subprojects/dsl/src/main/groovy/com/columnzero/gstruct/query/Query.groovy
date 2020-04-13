@@ -47,20 +47,20 @@ class QueryRunner {
      */
     private static Collection<ResultTree> queryNode(Node node, QueryTree query) {
 
-        def fieldEdges = query.fields.collect{ fieldName, fieldQuery ->
+        def fieldEdges = query.fields.collect { fieldName, fieldQuery ->
             [fieldName, fieldQuery, node.edgesOut(fieldName)]
         }
         // fieldEdges := ( fieldName, fieldQuery, edges[0..*] )[0..fields.size]
 
         // if we can't find at least one edge for every field, this isn't the node we're looking for
-        if (fieldEdges.every{ it[2].size > 0 }) {
+        if (fieldEdges.every { it[2].size > 0 }) {
             return []
         }
         // fieldEdges := ( fieldName, fieldQuery, edges[1..*] )[0..fields.size]
 
-        def resultsByField = fieldEdges.collect{ fieldName, fieldQuery, edges ->
-            edges.collectMany{ edge ->
-                queryEdge(edge, fieldQuery).collect{ edgeResult ->
+        def resultsByField = fieldEdges.collect { fieldName, fieldQuery, edges ->
+            edges.collectMany { edge ->
+                queryEdge(edge, fieldQuery).collect { edgeResult ->
                     [fieldName, edgeResult]
                 }
                 // yield: (fieldName, edgeResult)[0..edgeResults.size]
@@ -69,8 +69,8 @@ class QueryRunner {
         }
         // resultsByField := ( ( fieldName, result )[0..results.size] )[0..fields.size]
 
-        return resultsByField.combinations().collect{ objPairs ->
-            new ResultTree(objPairs.collectEntries{ it })
+        return resultsByField.combinations().collect { objPairs ->
+            new ResultTree(objPairs.collectEntries { it })
         }
     }
 
@@ -88,7 +88,7 @@ class QueryRunner {
         }
 
         // must be we're looking for a literal
-        return node.value
+        return node.value as Collection<Object>
     }
 }
 
@@ -113,11 +113,11 @@ class Node {
     }
 
     Collection<Edge> edgesOut(FQName edgeName = null) {
-        return this.isLeaf ? [] : graph.findAll(s: value, p: edgeName).collect{ new Edge(it, graph) }
+        return this.isLeaf ? [] : graph.findAll(s: value, p: edgeName).collect { new Edge(it, graph) }
     }
 
     Collection<Edge> edgesIn(FQName edgeName = null) {
-        return graph.findAll(p: edgeName, o: value).collect{ new Edge(it, graph) }
+        return graph.findAll(p: edgeName, o: value).collect { new Edge(it, graph) }
     }
 }
 

@@ -37,7 +37,7 @@ class TripleIndexTest extends Specification {
             .put(xyz))
 
         expect:
-        az42 in index == false
+        !(az42 in index)
     }
 
     def 'subgraph is in index'() {
@@ -66,7 +66,7 @@ class TripleIndexTest extends Specification {
             .put(az42)
 
         expect:
-        subg in index == false
+        !(subg in index)
     }
 
     @Unroll

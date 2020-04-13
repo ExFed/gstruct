@@ -1,11 +1,12 @@
 package com.columnzero.gstruct
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.ResolveVisitor
 
 import com.columnzero.gstruct.graph.Graph
 
-@groovy.transform.CompileStatic
+@CompileStatic
 class DslMain {
     static def parse(File file) {
         // HACK: this (seemingly) prevents (most) default imports (e.g. java.lang.String) but still
