@@ -13,14 +13,18 @@ public class TestUtil {
         throw new UnsupportedOperationException("utility");
     }
 
+    @SafeVarargs
     @SuppressWarnings({"ConstantConditions", "EqualsWithItself"})
-    public static <T> void assertEqualsAndHashCode(T a1, T a2, T b) {
+    public static <T> void assertEqualsAndHashCode(T a1, T a2, T b, T... etc) {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         // null
         exec.add(() -> assertThat(a1.equals(null)).isFalse())
             .add(() -> assertThat(a2.equals(null)).isFalse())
             .add(() -> assertThat(b.equals(null)).isFalse());
+
+        // type
+        exec.add(() -> assertThat(a1.equals(new Object() {})).isFalse());
 
         // reflexive
         exec.add(() -> assertThat(a1.equals(a1)).isTrue());
@@ -35,6 +39,10 @@ public class TestUtil {
         for (int i = 0; i < 10; i++) {
             exec.add(() -> assertThat(a1.equals(a2)).isTrue())
                 .add(() -> assertThat(a1.equals(b)).isFalse());
+        }
+        for (T e : etc) {
+            exec.add(() -> assertThat(a1.equals(e)).isFalse())
+                .add(() -> assertThat(e.equals(a1)).isFalse());
         }
 
         // hashcode

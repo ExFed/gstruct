@@ -96,8 +96,10 @@ class PathTest {
     void equalsAndHashCode() {
         final Path<String> abc1 = Path.of(abc);
         final Path<String> abc2 = Path.of(abc);
-        final Path<String> xyz = Path.of("x", "y", "z");
+        final Path<String> xyz = Path.of("xyz".split(""));
+        final Path<String> xyzabc = Path.of("xyzabc".split(""));
+        final Path<String> ccc = Path.of("ccc".split(""));
 
-        assertEqualsAndHashCode(abc1, abc2, xyz);
+        assertEqualsAndHashCode(abc1, abc2, xyz, xyzabc, ccc);
     }
 }
