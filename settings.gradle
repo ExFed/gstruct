@@ -1,6 +1,6 @@
 rootProject.name = 'gStruct'
 
-include 'dsl'
+include 'lang'
 include 'util'
 
 // define subproject directories
