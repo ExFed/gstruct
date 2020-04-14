@@ -67,7 +67,9 @@ public class Trie<T, V> {
 
     @SuppressWarnings("unchecked")
     public Set<Entry<Path<T>, V>> entrySet() {
-        return (Set<Entry<Path<T>, V>>) entrySetRecurse(new LinkedHashSet<>(), Path.getRoot(), root);
+        return (Set<Entry<Path<T>, V>>) entrySetRecurse(new LinkedHashSet<>(),
+                                                        Path.getRoot(),
+                                                        root);
     }
 
     @Override

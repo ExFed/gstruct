@@ -17,8 +17,8 @@ public class Path<T> implements Iterable<T> {
     /**
      * Creates a path that forms part of the global tree.
      *
-     * @param elements Elements of the path. The first element is attached to the global root, the last element becomes
-     *                 a leaf.
+     * @param elements Elements of the path. The first element is attached to the global root, the
+     *                 last element becomes a leaf.
      * @param <T>      Type of elements within the path.
      *
      * @return A new path.
@@ -31,8 +31,8 @@ public class Path<T> implements Iterable<T> {
     /**
      * Creates a path that forms part of the global tree.
      *
-     * @param elements Elements of the path. The first element is attached to the global root, the last element becomes
-     *                 a leaf.
+     * @param elements Elements of the path. The first element is attached to the global root, the
+     *                 last element becomes a leaf.
      * @param <T>      Type of elements within the path.
      *
      * @return A new path.
@@ -83,7 +83,8 @@ public class Path<T> implements Iterable<T> {
     }
 
     /**
-     * Generates a list representation of this path. The first element is the base, the last element is the leaf.
+     * Generates a list representation of this path. The first element is the base, the last element
+     * is the leaf.
      *
      * @return A list of the path elements.
      */
