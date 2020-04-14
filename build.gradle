@@ -17,6 +17,23 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
 
+    test {
+        useJUnitPlatform()
+
+        testLogging.showStandardStreams true
+
+        // show test summary (adapted from https://gist.github.com/orip/4951642)
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                testLogging.lifecycle.println "$result.resultType " +
+                        "($result.testCount tests," +
+                        " $result.successfulTestCount successful," +
+                        " $result.failedTestCount failed," +
+                        " $result.skippedTestCount skipped)"
+            }
+        }
+    }
+
     rootProject.check.dependsOn test
 }
 

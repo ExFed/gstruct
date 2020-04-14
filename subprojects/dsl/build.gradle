@@ -9,9 +9,3 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.0-M2-groovy-3.0'
     testImplementation 'commons-io:commons-io:2.6'
 }
-
-test.testLogging.showStandardStreams = true
-
-test {
-    useJUnitPlatform()
-}
