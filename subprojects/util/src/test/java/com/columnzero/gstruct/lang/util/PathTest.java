@@ -37,7 +37,7 @@ class PathTest {
     @SuppressWarnings("ConstantConditions")
     @Test
     void construction() {
-        final Stream<Executable> successCases = Stream.of(
+        final Stream<Executable> pathOfCases = Stream.of(
                 asList("a/b/c".split("/")),
                 asList("x/x/x".split("/")),
                 singletonList("a"),
@@ -46,13 +46,16 @@ class PathTest {
 
         final List<String> nullStrings = null;
 
-        final Path<String> singletonPath = Path.of("x");
+        final Path<String> xPath = Path.of("x");
         final Stream<Executable> errorCases = Stream.of(
                 () -> assertThrows(NullPointerException.class, () -> Path.of(nullStrings)),
-                () -> assertThrows(NullPointerException.class, () -> singletonPath.child(null))
+                () -> assertThrows(NullPointerException.class, () -> xPath.child((String) null)),
+                () -> assertThrows(NullPointerException.class, () -> xPath.child(nullStrings))
         );
 
-        final Stream<Executable> cases = Stream.of(successCases, errorCases).reduce(Stream::concat).get();
+        final Stream<Executable> cases = Stream.of(pathOfCases, errorCases)
+                                               .reduce(Stream::concat)
+                                               .get();
         assertAll(cases);
     }
 

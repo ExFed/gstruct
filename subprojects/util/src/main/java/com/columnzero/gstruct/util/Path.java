@@ -82,6 +82,14 @@ public class Path<T> implements Iterable<T> {
         return new Path<>(value, this);
     }
 
+    public Path<T> child(Iterable<T> values) {
+        return childIt(values.iterator());
+    }
+
+    private Path<T> childIt(Iterator<T> it) {
+        return it.hasNext() ? this.child(it.next()).childIt(it) : this;
+    }
+
     /**
      * Generates a list representation of this path. The first element is the base, the last element
      * is the leaf.
