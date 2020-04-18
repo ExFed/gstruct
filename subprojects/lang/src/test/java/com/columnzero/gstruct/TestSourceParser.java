@@ -6,7 +6,7 @@ import groovy.lang.GroovyShell;
 import groovy.util.DelegatingScript;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-public class SourceParser {
+public class TestSourceParser {
 
     private static final DummyClosure PRIMITIVE = new DummyClosure();
 
@@ -25,7 +25,7 @@ public class SourceParser {
 
     private final String src;
 
-    public SourceParser(String src) {
+    public TestSourceParser(String src) {
         this.src = src;
     }
 

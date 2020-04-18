@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class SourceParserTest {
+class DeclarationScraperTest {
 
     @Test
     void parseNameDeclarations() {
@@ -23,7 +23,7 @@ class SourceParserTest {
                                                .collect(Collectors.toSet());
 
         final DeclarationScraper delegate = new DeclarationScraper(Path.getRoot());
-        new SourceParser(src).parse(delegate);
+        new TestSourceParser(src).parse(delegate);
         final Set<Path<String>> actual = delegate.getAllDeclarations();
         assertEquals(expect, actual);
     }
