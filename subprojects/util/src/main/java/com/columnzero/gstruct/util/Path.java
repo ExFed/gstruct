@@ -1,6 +1,11 @@
 package com.columnzero.gstruct.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 public class Path<T> implements Iterable<T> {
 
@@ -117,8 +122,12 @@ public class Path<T> implements Iterable<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Path<?> path = (Path<?>) o;
         return value.equals(path.value)
                 && depth == path.depth
