@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang.util;
+package com.columnzero.gstruct.util;
 
 import org.junit.jupiter.api.function.Executable;
 

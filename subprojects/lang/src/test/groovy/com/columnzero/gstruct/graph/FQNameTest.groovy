@@ -1,6 +1,6 @@
 package com.columnzero.gstruct.graph
 
-import com.columnzero.gstruct.lang.FQName
+import com.columnzero.gstruct.glang.FQName
 import spock.lang.Specification
 
 class FQNameTest extends Specification {

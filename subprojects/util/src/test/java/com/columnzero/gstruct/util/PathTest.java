@@ -1,6 +1,5 @@
-package com.columnzero.gstruct.lang.util;
+package com.columnzero.gstruct.util;
 
-import com.columnzero.gstruct.util.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -10,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.columnzero.gstruct.lang.util.TestUtil.assertEqualsAndHashCode;
+import static com.columnzero.gstruct.util.TestUtil.assertEqualsAndHashCode;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

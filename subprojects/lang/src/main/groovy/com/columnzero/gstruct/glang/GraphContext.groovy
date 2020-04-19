@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang
+package com.columnzero.gstruct.glang
 
 import com.columnzero.gstruct.graph.Graph
 import groovy.transform.Canonical

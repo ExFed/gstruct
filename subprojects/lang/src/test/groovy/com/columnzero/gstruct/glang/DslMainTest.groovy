@@ -1,11 +1,13 @@
-package com.columnzero.gstruct.lang
+package com.columnzero.gstruct.glang
 
 import com.columnzero.gstruct.graph.Graph
 import spock.lang.Specification
 
-import static com.columnzero.gstruct.lang.Keywords.getPRIMITIVE
-import static com.columnzero.gstruct.lang.Keywords.getSTRUCT
-import static com.columnzero.gstruct.lang.Relationships.*
+import static com.columnzero.gstruct.glang.Keywords.PRIMITIVE
+import static com.columnzero.gstruct.glang.Keywords.STRUCT
+import static com.columnzero.gstruct.glang.Relationships.DESCRIPTION
+import static com.columnzero.gstruct.glang.Relationships.FIELD
+import static com.columnzero.gstruct.glang.Relationships.TYPE
 
 class DslMainTest extends Specification {
     // shorthand helper for names in the global namespace

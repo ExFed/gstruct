@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang
+package com.columnzero.gstruct.glang
 
 import static groovy.lang.Closure.DELEGATE_ONLY
 

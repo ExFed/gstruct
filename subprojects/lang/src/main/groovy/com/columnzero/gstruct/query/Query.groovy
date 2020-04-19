@@ -2,7 +2,7 @@ package com.columnzero.gstruct.query
 
 import com.columnzero.gstruct.graph.Triple
 import com.columnzero.gstruct.graph.TripleIndex
-import com.columnzero.gstruct.lang.FQName
+import com.columnzero.gstruct.glang.FQName
 import groovy.transform.Canonical
 
 /*

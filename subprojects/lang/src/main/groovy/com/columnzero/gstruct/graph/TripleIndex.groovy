@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.graph
 
 
-import com.columnzero.gstruct.lang.FQName
+import com.columnzero.gstruct.glang.FQName
 
 class TripleIndex {
     private final def s = ([:] as LinkedHashMap).withDefault { [] as LinkedHashSet }

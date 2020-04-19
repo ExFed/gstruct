@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang
+package com.columnzero.gstruct.glang
 
 
 import groovy.transform.CompileStatic

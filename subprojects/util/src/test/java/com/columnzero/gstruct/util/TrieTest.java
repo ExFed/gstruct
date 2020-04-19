@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang.util;
+package com.columnzero.gstruct.util;
 
 import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.Trie;
