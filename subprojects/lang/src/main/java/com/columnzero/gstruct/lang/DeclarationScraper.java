@@ -8,6 +8,7 @@ import com.columnzero.gstruct.lang.grammar.RefSpec;
 import com.columnzero.gstruct.lang.grammar.StructSpec;
 import com.columnzero.gstruct.util.Path;
 import groovy.lang.Closure;
+import org.tinylog.Logger;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -22,35 +23,29 @@ public class DeclarationScraper implements FieldSpec,
 
     private final Path<String> namespace;
 
-    private final Set<String> typedefs = new LinkedHashSet<>();
-    private final Set<String> structs = new LinkedHashSet<>();
-    private final Set<String> fields = new LinkedHashSet<>();
+    private final Set<String> names = new LinkedHashSet<>();
 
     public DeclarationScraper(Path<String> namespace) {
         this.namespace = namespace;
     }
 
     public Set<Path<String>> getAllDeclarations() {
-        final LinkedHashSet<String> decls = new LinkedHashSet<>();
-        decls.addAll(typedefs);
-        decls.addAll(structs);
-        decls.addAll(fields);
-        return decls.stream().map(namespace::child).collect(Collectors.toSet());
+        return names.stream().map(namespace::child).collect(Collectors.toSet());
     }
 
     @Override
     public void typedef(Map<String, Closure<RefSpec>> typeDef) {
-        typedefs.addAll(typeDef.keySet());
+        addNames(typeDef.keySet());
     }
 
     @Override
     public void struct(Map<String, Closure<StructSpec>> structDef) {
-        structs.addAll(structDef.keySet());
+        addNames(structDef.keySet());
     }
 
     @Override
     public void field(Map<String, Closure<FieldSpec>> fieldDef) {
-        fields.addAll(fieldDef.keySet());
+        addNames(fieldDef.keySet());
     }
 
     @Override
@@ -71,5 +66,13 @@ public class DeclarationScraper implements FieldSpec,
     @Override
     public void setDescription(String description) {
         // noop
+    }
+
+    private void addNames(Set<String> names) {
+        for (String name : names) {
+            if (!this.names.add(name)) {
+                Logger.warn("Duplicate name declared: {}", name);
+            }
+        }
     }
 }
