@@ -1,5 +1,6 @@
-package com.columnzero.gstruct;
+package com.columnzero.gstruct.lang;
 
+import com.columnzero.gstruct.TestSourceParser;
 import com.columnzero.gstruct.util.Path;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,11 @@
-package com.columnzero.gstruct;
+package com.columnzero.gstruct.lang;
 
-import com.columnzero.gstruct.lang.grammar.*;
+import com.columnzero.gstruct.lang.grammar.DocumentationSpec;
+import com.columnzero.gstruct.lang.grammar.FieldSpec;
+import com.columnzero.gstruct.lang.grammar.FileSpec;
+import com.columnzero.gstruct.lang.grammar.PackageSpec;
+import com.columnzero.gstruct.lang.grammar.RefSpec;
+import com.columnzero.gstruct.lang.grammar.StructSpec;
 import com.columnzero.gstruct.util.Path;
 import groovy.lang.Closure;
 
@@ -9,8 +14,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DeclarationScraper
-        implements FieldSpec, FileSpec, PackageSpec, StructSpec, DocumentationSpec {
+public class DeclarationScraper implements FieldSpec,
+                                           FileSpec,
+                                           PackageSpec,
+                                           StructSpec,
+                                           DocumentationSpec {
 
     private final Path<String> namespace;
 
