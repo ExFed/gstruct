@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
  */
 public class CallResult<V> {
 
-    private static final CallResult<Object> EMPTY_RESULT = success(null);
+    private static final CallResult<Object> EMPTY_SUCCESS = success(null);
 
     /**
      * Constructs the result of a successful call.
@@ -47,7 +47,7 @@ public class CallResult<V> {
     public static <V> CallResult<V> of(Callable<V> callable) {
         Objects.requireNonNull(callable);
 
-        return EMPTY_RESULT.map(arg -> callable.call());
+        return EMPTY_SUCCESS.map(arg -> callable.call());
     }
 
     private final V value;
