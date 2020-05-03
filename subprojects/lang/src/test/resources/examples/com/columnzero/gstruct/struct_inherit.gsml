@@ -1,0 +1,5 @@
+struct Object: {
+    description = 'stuff and things'
+    inherit primitive
+    field data: primitive
+}
