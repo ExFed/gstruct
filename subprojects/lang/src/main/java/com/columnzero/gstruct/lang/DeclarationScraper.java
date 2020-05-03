@@ -6,14 +6,14 @@ import com.columnzero.gstruct.lang.grammar.FileSpec;
 import com.columnzero.gstruct.lang.grammar.PackageSpec;
 import com.columnzero.gstruct.lang.grammar.RefSpec;
 import com.columnzero.gstruct.lang.grammar.StructSpec;
-import com.columnzero.gstruct.util.Path;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import org.tinylog.Logger;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DeclarationScraper implements FieldSpec,
                                            FileSpec,
@@ -21,16 +21,15 @@ public class DeclarationScraper implements FieldSpec,
                                            StructSpec,
                                            DocumentationSpec {
 
-    private final Path<String> namespace;
+    private final Set<String> $names = new LinkedHashSet<>();
+    private final Binding $binding;
 
-    private final Set<String> names = new LinkedHashSet<>();
-
-    public DeclarationScraper(Path<String> namespace) {
-        this.namespace = namespace;
+    public DeclarationScraper(Binding binding) {
+        this.$binding = binding;
     }
 
-    public Set<Path<String>> getAllDeclarations() {
-        return names.stream().map(namespace::child).collect(Collectors.toSet());
+    public Set<String> $names() {
+        return Collections.unmodifiableSet($names);
     }
 
     @Override
@@ -70,9 +69,13 @@ public class DeclarationScraper implements FieldSpec,
 
     private void addNames(Set<String> names) {
         for (String name : names) {
-            if (!this.names.add(name)) {
+            if (!this.$names.add(name)) {
                 Logger.warn("Duplicate name declared: {}", name);
             }
+            this.$binding.setVariable(name, new Closure<Void>(null) {
+                public void doCall(Object... args) {
+                }
+            });
         }
     }
 }
