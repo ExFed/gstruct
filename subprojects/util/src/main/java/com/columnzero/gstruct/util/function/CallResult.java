@@ -89,6 +89,22 @@ public class CallResult<V> {
     }
 
     /**
+     * Gets the value of the result or throws an {@link IllegalStateException} if an error exists.
+     * Can be viewed as the "unchecked" form of {@link #get()}.
+     *
+     * @return Value of the result if the call was successful.
+     *
+     * @throws IllegalStateException If the result of the call was not successful.
+     */
+    public V getValue() {
+        if (error != null) {
+            throw new IllegalStateException("Cannot get a non-successful value.", error);
+        }
+
+        return value;
+    }
+
+    /**
      * If this is a successful result, returns the result of applying the given function to the
      * value of this result, otherwise returns the current failure result.
      *

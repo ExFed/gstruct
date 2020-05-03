@@ -7,33 +7,41 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CallResultTest {
 
-    private static <T> void assertResults(T successVal, TestException failureVal) throws Exception {
+    private static <T> void assertSuccess(T successVal, CallResult<T> result) throws Exception {
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.get()).isSameInstanceAs(successVal);
+        assertThat(result.getValue()).isSameInstanceAs(successVal);
+    }
+
+    private static <T> void assertFailure(CallResult<T> result) {
+        assertThat(result.isSuccess()).isFalse();
+        assertThrows(TestException.class, result::get);
+        assertThrows(IllegalStateException.class, result::getValue);
+    }
+
+    private static <T> void assertResults(T successVal, TestException error) throws Exception {
+
         final CallResult<T> r0 = CallResult.success(successVal);
 
-        assertThat(r0.isSuccess()).isTrue();
-        assertThat(r0.get()).isSameInstanceAs(successVal);
+        assertSuccess(successVal, r0);
 
         final CallResult<T> r1 = r0.map(arg -> arg);
 
-        assertThat(r1.isSuccess()).isTrue();
-        assertThat(r1.get()).isSameInstanceAs(successVal);
+        assertSuccess(successVal, r1);
 
         final CallResult<T> r2 = r0.map(arg -> {
             throw new TestException();
         });
 
-        assertThat(r2.isSuccess()).isFalse();
-        assertThrows(TestException.class, r2::get);
+        assertFailure(r2);
 
-        final CallResult<T> r3 = CallResult.failure(failureVal);
+        final CallResult<T> r3 = CallResult.failure(error);
 
-        assertThat(r3.isSuccess()).isFalse();
-        assertThrows(TestException.class, r3::get);
+        assertFailure(r3);
 
         final CallResult<T> r4 = r3.map(arg -> arg);
 
-        assertThat(r4.isSuccess()).isFalse();
-        assertThrows(TestException.class, r4::get);
+        assertFailure(r4);
     }
 
     @Test
