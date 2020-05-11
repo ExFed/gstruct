@@ -21,7 +21,7 @@ import static com.columnzero.gstruct.TestSourceParser.withSource;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class DeclarationScraperTest {
+class NameDeclarationsTest {
 
     @Test
     void parseSomePrimitives() {
@@ -34,7 +34,7 @@ class DeclarationScraperTest {
 
         final TestSourceParser parser = withSource(src);
         final Binding binding = parser.getBinding();
-        final DeclarationScraper scraper = new DeclarationScraper(binding);
+        final NameDeclarations scraper = new NameDeclarations(binding);
 
         parser.run(scraper);
 
@@ -57,11 +57,11 @@ class DeclarationScraperTest {
         final var scrapers = parserRes.get(true)
                                       .stream()
                                       .map(CallResult::getValue)
-                                      .map(p -> p.run(DeclarationScraper::new))
+                                      .map(p -> p.run(NameDeclarations::new))
                                       .collect(Collectors.toList());
 
         final List<Executable> execs = new ArrayList<>();
-        for (DeclarationScraper ds : scrapers) {
+        for (NameDeclarations ds : scrapers) {
             execs.add(() -> assertThat(ds.$names()).isNotEmpty());
         }
         assertAll(execs);

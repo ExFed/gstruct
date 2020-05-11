@@ -15,16 +15,16 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DeclarationScraper implements FieldSpec,
-                                           FileSpec,
-                                           PackageSpec,
-                                           StructSpec,
-                                           DocumentationSpec {
+public class NameDeclarations implements FieldSpec,
+                                         FileSpec,
+                                         PackageSpec,
+                                         StructSpec,
+                                         DocumentationSpec {
 
     private final Set<String> $names = new LinkedHashSet<>();
     private final Binding $binding;
 
-    public DeclarationScraper(Binding binding) {
+    public NameDeclarations(Binding binding) {
         this.$binding = binding;
     }
 
