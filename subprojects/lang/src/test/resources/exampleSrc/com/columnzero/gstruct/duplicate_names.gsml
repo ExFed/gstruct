@@ -1,0 +1,9 @@
+//+++
+//[expect]
+//names = ['X', 'Y']
+
+typedef X: primitive
+typedef Y: primitive
+
+struct X: {}
+typedef Y: Y

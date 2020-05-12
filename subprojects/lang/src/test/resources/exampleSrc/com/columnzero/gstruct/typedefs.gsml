@@ -1,3 +1,18 @@
+/*+++
+  [expect]
+  names = [
+      'String',
+      'Number',
+      'Bool',
+      'StringLike',
+      'NumberLike',
+      'BoolLike',
+      'Data',
+      'Value',
+      'FakeNews'
+  ]
+*/
+
 typedef String : primitive
 typedef Number : primitive
 typedef Bool : primitive

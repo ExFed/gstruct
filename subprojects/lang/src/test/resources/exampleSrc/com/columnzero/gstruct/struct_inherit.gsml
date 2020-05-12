@@ -1,3 +1,7 @@
+//+++
+// [expect]
+// names = [ 'Object' ]
+
 struct Object: {
     description = 'stuff and things'
     inherit primitive

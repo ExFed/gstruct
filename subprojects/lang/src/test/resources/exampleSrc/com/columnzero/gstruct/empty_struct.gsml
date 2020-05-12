@@ -1,0 +1,5 @@
+//+++
+// [expect]
+// names = [ 'Empty' ]
+
+struct Empty: {}

@@ -32,7 +32,7 @@ class NameDeclarationsTest {
 
         final Set<String> expect = new HashSet<>(Arrays.asList("String", "Number", "Bool"));
 
-        final TestSourceParser parser = withSource(src);
+        final TestSourceParser<String> parser = withSource(src);
         final Binding binding = parser.getBinding();
         final NameDeclarations scraper = new NameDeclarations(binding);
 
@@ -44,25 +44,28 @@ class NameDeclarationsTest {
 
     @Test
     void examples() throws Exception {
-        final var parserRes = Files.walk(ExampleSources.getExamplesDir())
-                                   .map(Path::toFile)
-                                   .filter(File::isFile)
-                                   .filter(f -> f.getName().endsWith(".gsml"))
-                                   .map(file -> CallResult.of(() -> withSource(file)))
-                                   .collect(Collectors.partitioningBy(CallResult::isSuccess));
+        final var sources = Files.walk(ExampleSources.getExamplesDir())
+                                 .map(Path::toFile)
+                                 .filter(File::isFile)
+                                 .filter(f -> f.getName().endsWith(".gsml"))
+                                 .collect(Collectors.toSet());
+        final var parserRes = sources.stream()
+                                     .map(file -> CallResult.of(() -> withSource(file)))
+                                     .collect(Collectors.partitioningBy(CallResult::isSuccess));
 
         // make sure we don't have any errors
         assertThat(parserRes.get(false)).isEmpty();
 
-        final var scrapers = parserRes.get(true)
-                                      .stream()
-                                      .map(CallResult::getValue)
-                                      .map(p -> p.run(NameDeclarations::new))
-                                      .collect(Collectors.toList());
-
         final List<Executable> execs = new ArrayList<>();
-        for (NameDeclarations ds : scrapers) {
-            execs.add(() -> assertThat(ds.$names()).isNotEmpty());
+        for (CallResult<TestSourceParser<File>> result : parserRes.get(true)) {
+            final TestSourceParser<File> parser = result.getValue();
+            final NameDeclarations decls = parser.run(NameDeclarations::new);
+            final Set<String> expect = ExampleSources.getHeader(parser.getSource())
+                                                     .map(ExampleSources.Header::getExpectedNames)
+                                                     .orElseThrow(() -> new AssertionError(
+                                                             "Missing example header"));
+
+            execs.add(() -> assertThat(decls.$names()).isEqualTo(expect));
         }
         assertAll(execs);
     }
