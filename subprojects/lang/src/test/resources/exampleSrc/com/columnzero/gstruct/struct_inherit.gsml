@@ -1,9 +1,12 @@
 //+++
 // [expect]
-// names = [ 'Object' ]
+// names = [ 'Object', 'Super' ]
 
-struct Object: {
-    description = 'stuff and things'
-    inherit primitive
+struct Super: primitive {
+    description = 'super object, to the rescue!'
+}
+
+struct Object: Super {
+    description = 'mere object, in super need of rescue!'
     field data: primitive
 }

@@ -53,11 +53,6 @@ public class NameDeclarations implements FieldSpec,
     }
 
     @Override
-    public void inherit(RefSpec id) {
-        // noop
-    }
-
-    @Override
     public void type(RefSpec spec) {
         // noop
     }
@@ -73,7 +68,8 @@ public class NameDeclarations implements FieldSpec,
                 Logger.warn("Duplicate name declared: {}", name);
             }
             this.$binding.setVariable(name, new Closure<Void>(null) {
-                public void doCall(Object... args) {
+                public Void call(Object... args) {
+                    return null;
                 }
             });
         }

@@ -67,5 +67,20 @@ public class TestSourceParser<S> {
         public DummyClosure() {
             super(null);
         }
+
+        @Override
+        public Void call() {
+            return null;
+        }
+
+        @Override
+        public Void call(Object... args) {
+            return null;
+        }
+
+        @Override
+        public Void call(Object arguments) {
+            return null;
+        }
     }
 }

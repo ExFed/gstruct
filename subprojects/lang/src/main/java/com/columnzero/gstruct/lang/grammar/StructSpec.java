@@ -6,5 +6,4 @@ import java.util.Map;
 
 public interface StructSpec extends DocumentationSpec {
     void field(Map<String, Closure<FieldSpec>> fieldDef);
-    void inherit(RefSpec id);
 }
