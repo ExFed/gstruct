@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -60,12 +61,15 @@ class NameDeclarationsTest {
         for (CallResult<TestSourceParser<File>> result : parserRes.get(true)) {
             final TestSourceParser<File> parser = result.getValue();
             final NameDeclarations decls = parser.run(NameDeclarations::new);
-            final Set<String> expect = ExampleSources.getHeader(parser.getSource())
-                                                     .map(ExampleSources.Header::getExpectedNames)
-                                                     .orElseThrow(() -> new AssertionError(
-                                                             "Missing example header"));
+            final Optional<Set<String>> expect =
+                    ExampleSources.getHeader(parser.getSource())
+                                  .map(ExampleSources.Header::getExpectedNames);
 
-            execs.add(() -> assertThat(decls.$names()).isEqualTo(expect));
+            if (expect.isPresent()) {
+                execs.add(() -> assertThat(decls.$names()).isEqualTo(expect.get()));
+            } else {
+                execs.add(() -> assertThat(decls.$names()).isNotEmpty());
+            }
         }
         assertAll(execs);
     }
