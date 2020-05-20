@@ -1,7 +1,11 @@
 package com.columnzero.gstruct.util;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
@@ -129,10 +133,10 @@ public class Trie<T, V> {
      */
     private static final class Node<E, V> {
 
-        final Map<E, Node<E, V>> children = new LinkedHashMap<>();
+        private final Map<E, Node<E, V>> children = new LinkedHashMap<>();
 
-        boolean present = false;
-        V value = null;
+        private boolean present = false;
+        private V value = null;
 
         boolean hasValue() {
             return present;
