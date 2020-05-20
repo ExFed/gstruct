@@ -1,7 +1,8 @@
-package com.columnzero.gstruct.lang;
+package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.TestSourceParser;
+import com.columnzero.gstruct.lang.internal.NameDeclarations;
 import com.columnzero.gstruct.util.function.CallResult;
 import groovy.lang.Binding;
 import org.junit.jupiter.api.Test;

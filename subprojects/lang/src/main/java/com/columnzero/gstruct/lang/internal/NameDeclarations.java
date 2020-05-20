@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang;
+package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.lang.grammar.DocumentationSpec;
 import com.columnzero.gstruct.lang.grammar.FieldSpec;
