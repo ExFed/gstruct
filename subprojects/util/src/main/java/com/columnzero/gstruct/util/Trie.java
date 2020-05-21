@@ -1,5 +1,7 @@
 package com.columnzero.gstruct.util;
 
+import java.util.AbstractSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -10,10 +12,18 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A trie/prefix-tree that keys on generic token strings, not just character strings.
+ * An associative prefix tree of generic token strings.
+ * <p>
+ * {@link Trie} is distinct from the typical trie in that it keys on token strings, not character
+ * sequences. As this implementation is backed by {@link LinkedHashMap}, tokens should override
+ * {@link Object#equals(Object)} and {@link Object#hashCode()}.
  *
- * @param <T> type of tokens that form paths in the tree
- * @param <V> type of mapped values
+ * @param <T> Type of tokens that form paths in the tree.
+ * @param <V> Type of mapped values.
+ *
+ * @see LinkedHashMap
+ * @see Object#hashCode()
+ * @see Object#equals(Object)
  */
 public class Trie<T, V> {
 
@@ -35,8 +45,8 @@ public class Trie<T, V> {
         return node == null ? null : node.getValue();
     }
 
-    public V put(Path<T> path, V value) {
-        final Node node = makeNode(path);
+    public V put(Iterable<? extends T> key, V value) {
+        final Node node = makeNode(key);
 
         if (!node.hasValue()) {
             size++;
@@ -47,8 +57,8 @@ public class Trie<T, V> {
         return oldValue;
     }
 
-    public void putAll(Map<? extends Path<T>, ? extends V> map) {
-        for (Entry<? extends Path<T>, ? extends V> e : map.entrySet()) {
+    public void putAll(Map<? extends Iterable<? extends T>, ? extends V> map) {
+        for (Entry<? extends Iterable<? extends T>, ? extends V> e : map.entrySet()) {
             put(e.getKey(), e.getValue());
         }
     }
@@ -69,11 +79,10 @@ public class Trie<T, V> {
         return oldValue;
     }
 
-    @SuppressWarnings("unchecked")
-    public Set<Entry<Path<T>, V>> entrySet() {
-        return (Set<Entry<Path<T>, V>>) entrySetRecurse(new LinkedHashSet<>(),
-                                                        Path.getRoot(),
-                                                        root);
+    public Set<Entry<Iterable<T>, V>> entrySet() {
+        return entrySetRecurse(new NodeEntrySet(),
+                               Path.getRoot(),
+                               root);
     }
 
     @Override
@@ -82,50 +91,50 @@ public class Trie<T, V> {
     }
 
     /**
-     * Iteratively searches for the node at the given path, returns null if none found.
+     * Iteratively searches for the node at the given key, returns null if none found.
      */
     private Node findNode(Object key) {
-        if (!(key instanceof Path)) {
+        if (!(key instanceof Iterable)) {
             return null;
         }
 
         Node node = root;
-        for (Object pathElem : (Path<?>) key) {
-            if (!node.hasChild(pathElem)) {
+        for (Object keyToken : (Iterable<?>) key) {
+            if (!node.hasChild(keyToken)) {
                 return null;
             }
-            node = node.getChild(pathElem);
+            node = node.getChild(keyToken);
         }
         return node;
     }
 
     /**
-     * Iteratively makes a new node at the given path if it doesn't already exist.
+     * Iteratively makes a new node at the given key if it doesn't already exist.
      */
-    private Node makeNode(Path<T> path) {
+    private Node makeNode(Iterable<? extends T> key) {
         Node node = root;
-        for (T pathElem : path) {
-            node = node.putChildIfAbsent(pathElem);
+        for (T keyToken : key) {
+            node = node.putChildIfAbsent(keyToken);
         }
         return node;
     }
 
     /**
-     * Recursively accumulates depth-first for nodes that have value
+     * Recursively accumulates depth-first for nodes that have value.
      */
-    private Set<? extends Entry<Path<T>, V>> entrySetRecurse(Set<NodeEntry> entries,
-                                                             Path<T> path,
-                                                             Node node) {
+    private Set<Entry<Iterable<T>, V>> entrySetRecurse(NodeEntrySet entries,
+                                                       Path<T> key,
+                                                       Node node) {
         if (node.hasValue()) {
-            entries.add(new NodeEntry(path, node));
+            entries.inner.add(new NodeEntry(key, node));
         }
 
         for (Entry<T, Node> childEntry : node.getChildEntries()) {
-            final Path<T> childPath = path.child(childEntry.getKey());
+            final Path<T> childPath = key.child(childEntry.getKey());
             entrySetRecurse(entries, childPath, childEntry.getValue());
         }
 
-        return entries;
+        return entries.inner;
     }
 
     /**
@@ -192,21 +201,38 @@ public class Trie<T, V> {
     }
 
     /**
+     * A set of entries.
+     */
+    private final class NodeEntrySet extends AbstractSet<Entry<Iterable<T>, V>> {
+        private final Set<Entry<Iterable<T>, V>> inner = new LinkedHashSet<>();
+
+        @Override
+        public Iterator<Entry<Iterable<T>, V>> iterator() {
+            return inner.iterator();
+        }
+
+        @Override
+        public int size() {
+            return inner.size();
+        }
+    }
+
+    /**
      * An entry within the entry set.
      */
-    private final class NodeEntry implements Entry<Path<T>, V> {
+    private final class NodeEntry implements Entry<Iterable<T>, V> {
 
-        private final Path<T> path;
+        private final Iterable<T> key;
         private final Node node;
 
-        private NodeEntry(Path<T> path, Node node) {
-            this.path = requireNonNull(path);
+        private NodeEntry(Iterable<T> key, Node node) {
+            this.key = requireNonNull(key);
             this.node = requireNonNull(node);
         }
 
         @Override
-        public Path<T> getKey() {
-            return path;
+        public Iterable<T> getKey() {
+            return key;
         }
 
         @Override
@@ -234,12 +260,12 @@ public class Trie<T, V> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(path, node);
+            return Objects.hash(key, node);
         }
 
         @Override
         public String toString() {
-            return path + "=" + node.getValue();
+            return key + "=" + node.getValue();
         }
     }
 }

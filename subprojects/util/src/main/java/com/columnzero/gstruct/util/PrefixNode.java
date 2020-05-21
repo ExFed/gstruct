@@ -1,10 +1,12 @@
 package com.columnzero.gstruct.util;
 
 /**
- * A node in a generic, tokenized prefix search tree. Note that this is different from a typical
- * prefix tree, as tokens within the tree may be arbitrary objects, not just characters. Child nodes
- * are uniquely keyed by their associated token. That means tokens will have to satisfy conditions
- * to determine uniqueness, depending upon specific implementations.
+ * A node in a generic, tokenized prefix search tree.
+ * <p>
+ * Note that this is different from a typical prefix tree, as tokens within the tree may be
+ * arbitrary objects, not just characters. Child nodes are uniquely keyed by their associated token.
+ * That means tokens will have to satisfy conditions to determine uniqueness, depending upon
+ * specific implementations.
  *
  * @param <T> Type of tokens associated with children.
  * @param <V> Type of values associated with nodes.

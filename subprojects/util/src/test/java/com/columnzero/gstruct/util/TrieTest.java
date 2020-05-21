@@ -9,6 +9,7 @@ import org.junit.jupiter.api.function.Executable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TrieTest {
 
     private Trie<Integer, String> cut;
-    private Map<Path<Integer>, String> data;
+    private Map<Iterable<Integer>, String> data;
 
     @BeforeEach
     void setUp() {
@@ -40,7 +41,7 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         final AtomicInteger i = new AtomicInteger(0);
-        for (Map.Entry<Path<Integer>, String> d : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> d : data.entrySet()) {
             exec.add(() -> {
                 cut.put(d.getKey(), d.getValue());
                 assertThat(cut.size()).isEqualTo(i.incrementAndGet());
@@ -56,7 +57,7 @@ class TrieTest {
 
         final Stream.Builder<Executable> exec = Stream.builder();
 
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.get(e.getKey())).isEqualTo(e.getValue()));
         }
 
@@ -76,12 +77,12 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         // insert data into empty trie
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.put(e.getKey(), e.getValue())).isEqualTo(null));
         }
 
         // overwrite existing elements
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.put(e.getKey(), null)).isEqualTo(e.getValue()));
         }
 
@@ -98,12 +99,12 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         // remove existing data
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.remove(e.getKey())).isEqualTo(e.getValue()));
         }
 
         // remove removed data
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.remove(e.getKey())).isEqualTo(null));
         }
 
@@ -118,8 +119,8 @@ class TrieTest {
     @Test
     void entrySet() {
         cut.putAll(data);
-        final Set<Map.Entry<Path<Integer>, String>> actual = cut.entrySet();
-        final Set<Map.Entry<Path<Integer>, String>> expect = data.entrySet();
+        final Set<Entry<Iterable<Integer>, String>> actual = cut.entrySet();
+        final Set<Entry<Iterable<Integer>, String>> expect = data.entrySet();
         assertThat(actual).isEqualTo(expect);
     }
 
@@ -129,7 +130,7 @@ class TrieTest {
 
         cut.putAll(data);
 
-        for (Map.Entry<Path<Integer>, String> e : data.entrySet()) {
+        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.containsKey(e.getKey())).isTrue());
         }
 
