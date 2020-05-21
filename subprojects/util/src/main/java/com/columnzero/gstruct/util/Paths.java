@@ -1,6 +1,7 @@
 package com.columnzero.gstruct.util;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * A utility class for managing paths.
@@ -19,12 +20,23 @@ public class Paths {
      * @return A new path.
      */
     public static Path<String> from(java.nio.file.Path nioPath) {
-        if (null == nioPath
-                || 0 == nioPath.getNameCount()
-                || nioPath.normalize().toString().isEmpty()) {
-            return Path.getRoot();
-        }
-        return from(nioPath.getParent()).child(nioPath.getFileName().toString());
+        // do some normalization and filtering up front...
+        return fromRecurse(Optional.ofNullable(nioPath)
+                                   .map(java.nio.file.Path::normalize)
+                                   .filter(p -> !p.toString().isEmpty())
+                                   .orElse(null));
+    }
+
+    /**
+     * Recursively stacks parents (i.e. does post-order insertion).
+     */
+    private static Path<String> fromRecurse(java.nio.file.Path nioPath) {
+        final Optional<java.nio.file.Path> nioPathOpt = Optional.ofNullable(nioPath);
+        return nioPathOpt.map(path -> fromRecurse(path.getParent()))
+                         .flatMap(parent -> nioPathOpt.map(java.nio.file.Path::getFileName)
+                                                      .map(java.nio.file.Path::toString)
+                                                      .map(parent::child))
+                         .orElse(Path.getRoot());
     }
 
     /**

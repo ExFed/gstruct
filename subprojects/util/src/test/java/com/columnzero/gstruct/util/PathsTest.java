@@ -31,6 +31,7 @@ class PathsTest {
         final Path<String> pathRel = Paths.from(nioPathRel);
         final Path<String> pathNull = Paths.from(null);
         final Path<String> pathDot = Paths.from(java.nio.file.Paths.get("."));
+        final Path<String> pathDotSlash = Paths.from(java.nio.file.Paths.get("./"));
         final Path<String> pathEmpty = Paths.from(java.nio.file.Paths.get(""));
 
         assertAll(
@@ -38,6 +39,7 @@ class PathsTest {
                 () -> assertThat(pathRel).containsExactlyElementsIn(relNames).inOrder(),
                 () -> assertThat(pathNull).isEqualTo(Path.getRoot()),
                 () -> assertThat(pathDot).isEqualTo(Path.getRoot()),
+                () -> assertThat(pathDotSlash).isEqualTo(Path.getRoot()),
                 () -> assertThat(pathEmpty).isEqualTo(Path.getRoot())
         );
     }
