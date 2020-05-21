@@ -10,14 +10,14 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A trie/prefix-tree.
+ * A trie/prefix-tree that keys on generic token strings, not just character strings.
  *
  * @param <T> type of tokens that form paths in the tree
  * @param <V> type of mapped values
  */
 public class Trie<T, V> {
 
-    private final Node<T, V> root = new Node<>();
+    private final Node root = new Node();
 
     private int size = 0;
 
@@ -26,17 +26,17 @@ public class Trie<T, V> {
     }
 
     public boolean containsKey(Object key) {
-        final Node<T, V> node = findNode(key);
+        final Node node = findNode(key);
         return node != null && node.hasValue();
     }
 
     public V get(Object key) {
-        final Node<T, V> node = findNode(key);
+        final Node node = findNode(key);
         return node == null ? null : node.getValue();
     }
 
     public V put(Path<T> path, V value) {
-        final Node<T, V> node = makeNode(path);
+        final Node node = makeNode(path);
 
         if (!node.hasValue()) {
             size++;
@@ -54,7 +54,7 @@ public class Trie<T, V> {
     }
 
     public V remove(Object key) {
-        final Node<T, V> node = findNode(key);
+        final Node node = findNode(key);
 
         if (node == null) {
             return null;
@@ -84,12 +84,12 @@ public class Trie<T, V> {
     /**
      * Iteratively searches for the node at the given path, returns null if none found.
      */
-    private Node<T, V> findNode(Object key) {
+    private Node findNode(Object key) {
         if (!(key instanceof Path)) {
             return null;
         }
 
-        Node<T, V> node = root;
+        Node node = root;
         for (Object pathElem : (Path<?>) key) {
             if (!node.hasChild(pathElem)) {
                 return null;
@@ -102,10 +102,10 @@ public class Trie<T, V> {
     /**
      * Iteratively makes a new node at the given path if it doesn't already exist.
      */
-    private Node<T, V> makeNode(Path<T> path) {
-        Node<T, V> node = root;
+    private Node makeNode(Path<T> path) {
+        Node node = root;
         for (T pathElem : path) {
-            node = node.makeChild(pathElem);
+            node = node.putChildIfAbsent(pathElem);
         }
         return node;
     }
@@ -113,14 +113,14 @@ public class Trie<T, V> {
     /**
      * Recursively accumulates depth-first for nodes that have value
      */
-    private static <T, V> Set<? extends Entry<Path<T>, V>> entrySetRecurse(Set<NodeEntry<T, V>> entries,
-                                                                           Path<T> path,
-                                                                           Node<T, V> node) {
+    private Set<? extends Entry<Path<T>, V>> entrySetRecurse(Set<NodeEntry> entries,
+                                                             Path<T> path,
+                                                             Node node) {
         if (node.hasValue()) {
-            entries.add(new NodeEntry<>(path, node));
+            entries.add(new NodeEntry(path, node));
         }
 
-        for (Entry<T, Node<T, V>> childEntry : node.getChildEntries()) {
+        for (Entry<T, Node> childEntry : node.getChildEntries()) {
             final Path<T> childPath = path.child(childEntry.getKey());
             entrySetRecurse(entries, childPath, childEntry.getValue());
         }
@@ -131,49 +131,62 @@ public class Trie<T, V> {
     /**
      * A node within the tree.
      */
-    private static final class Node<E, V> {
+    private final class Node implements PrefixNode<T, V> {
 
-        private final Map<E, Node<E, V>> children = new LinkedHashMap<>();
+        private final Map<T, Node> children = new LinkedHashMap<>();
 
         private boolean present = false;
         private V value = null;
 
-        boolean hasValue() {
+        @Override
+        public boolean hasValue() {
             return present;
         }
 
-        V getValue() {
+        @Override
+        public V getValue() {
             return hasValue() ? value : null;
         }
 
-        void setValue(V value) {
+        @Override
+        public void setValue(V value) {
             this.value = value;
             this.present = true;
         }
 
-        void removeValue() {
+        @Override
+        public void removeValue() {
             this.value = null;
             this.present = false;
         }
 
+        @Override
+        public Node putChildIfAbsent(T token) {
+            return children.computeIfAbsent(token, k -> new Node());
+        }
+
+        @SuppressWarnings("SuspiciousMethodCalls")
+        @Override
+        public boolean hasChild(Object token) {
+            return children.containsKey(token);
+        }
+
+        @SuppressWarnings("SuspiciousMethodCalls")
+        @Override
+        public Node getChild(Object token) {
+            return children.get(token);
+        }
+
+        @SuppressWarnings("SuspiciousMethodCalls")
+        @Override
+        public PrefixNode<T, V> removeChild(Object token) {
+            return children.remove(token);
+        }
+
         /**
-         * Creates a child node if it doesn't already exist.
+         * The raw entry set of children.
          */
-        Node<E, V> makeChild(E pathElem) {
-            return children.computeIfAbsent(pathElem, k -> new Node<>());
-        }
-
-        @SuppressWarnings("SuspiciousMethodCalls")
-        boolean hasChild(Object key) {
-            return children.containsKey(key);
-        }
-
-        @SuppressWarnings("SuspiciousMethodCalls")
-        Node<E, V> getChild(Object key) {
-            return children.get(key);
-        }
-
-        Set<Entry<E, Node<E, V>>> getChildEntries() {
+        private Set<Entry<T, Node>> getChildEntries() {
             return children.entrySet();
         }
     }
@@ -181,18 +194,18 @@ public class Trie<T, V> {
     /**
      * An entry within the entry set.
      */
-    private static final class NodeEntry<E, V> implements Entry<Path<E>, V> {
+    private final class NodeEntry implements Entry<Path<T>, V> {
 
-        private final Path<E> path;
-        private final Node<E, V> node;
+        private final Path<T> path;
+        private final Node node;
 
-        private NodeEntry(Path<E> path, Node<E, V> node) {
+        private NodeEntry(Path<T> path, Node node) {
             this.path = requireNonNull(path);
             this.node = requireNonNull(node);
         }
 
         @Override
-        public Path<E> getKey() {
+        public Path<T> getKey() {
             return path;
         }
 
