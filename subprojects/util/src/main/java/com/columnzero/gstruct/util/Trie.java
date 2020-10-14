@@ -57,10 +57,8 @@ public class Trie<T, V> {
         return oldValue;
     }
 
-    public void putAll(Map<? extends Iterable<? extends T>, ? extends V> map) {
-        for (Entry<? extends Iterable<? extends T>, ? extends V> e : map.entrySet()) {
-            put(e.getKey(), e.getValue());
-        }
+    public void putAll(Map<? extends Iterable<T>, ? extends V> map) {
+        putAllEntries(map.entrySet());
     }
 
     public V remove(Object key) {
@@ -135,6 +133,13 @@ public class Trie<T, V> {
         }
 
         return entries.inner;
+    }
+
+    private void putAllEntries(Set<? extends Entry<? extends Iterable<? extends T>, ? extends V>> eSet) {
+
+        for (Entry<? extends Iterable<? extends T>, ? extends V> e : eSet) {
+            put(e.getKey(), e.getValue());
+        }
     }
 
     /**
