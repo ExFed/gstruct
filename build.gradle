@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        classpath 'io.freefair.gradle:lombok-plugin:5.2.1'
+    }
+}
+
 plugins {
     id 'base'
     id 'idea'
@@ -16,6 +27,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'io.freefair.lombok'
 
     test {
         useJUnitPlatform()
