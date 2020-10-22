@@ -2,26 +2,22 @@ package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.TestSourceParser;
-import com.columnzero.gstruct.lang.internal.NameDeclarations;
-import com.columnzero.gstruct.util.function.CallResult;
 import groovy.lang.Binding;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.columnzero.gstruct.TestSourceParser.withSource;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 class NameDeclarationsTest {
 
@@ -32,46 +28,71 @@ class NameDeclarationsTest {
                 "typedef Number : primitive\n" +
                 "typedef Bool : primitive\n";
 
-        final Set<String> expect = new HashSet<>(Arrays.asList("String", "Number", "Bool"));
+        final Set<String> expect = Set.of("String", "Number", "Bool");
 
         final TestSourceParser<String> parser = withSource(src);
-        final Binding binding = parser.getBinding();
-        final NameDeclarations scraper = new NameDeclarations(binding);
+        final NameDeclarations scraper = new NameDeclarations();
 
         parser.run(scraper);
 
         assertThat(scraper.$names()).containsExactlyElementsIn(expect);
-        assertThat(binding.getVariables().keySet()).containsAtLeastElementsIn(expect);
+    }
+
+    static Stream<File> exampleSources() throws IOException {
+        // get all source files in the examples directory that end in ".gsml"
+        return Files.walk(ExampleSources.getExamplesDir())
+                    .map(Path::toFile)
+                    .filter(File::isFile)
+                    .filter(f -> f.getName().endsWith(".gsml"));
     }
 
     @Test
-    void examples() throws Exception {
-        final var sources = Files.walk(ExampleSources.getExamplesDir())
-                                 .map(Path::toFile)
-                                 .filter(File::isFile)
-                                 .filter(f -> f.getName().endsWith(".gsml"))
-                                 .collect(Collectors.toSet());
-        final var parserRes = sources.stream()
-                                     .map(file -> CallResult.of(() -> withSource(file)))
-                                     .collect(Collectors.partitioningBy(CallResult::isSuccess));
+    void parseClosures() {
+        final String src = "" +
+                "struct A : primitive {}\n" +
+                "struct B : A {}\n" +
+                "struct C : {}\n" +
+                "typedef X : primitive {}\n" +
+                "typedef Y : X {}\n" +
+                "typedef Z : {}\n";
 
-        // make sure we don't have any errors
-        assertThat(parserRes.get(false)).isEmpty();
+        final Set<String> expect = Set.of("A", "B", "C", "X", "Y", "Z");
 
-        final List<Executable> execs = new ArrayList<>();
-        for (CallResult<TestSourceParser<File>> result : parserRes.get(true)) {
-            final TestSourceParser<File> parser = result.getValue();
-            final NameDeclarations decls = parser.run(NameDeclarations::new);
-            final Optional<Set<String>> expect =
-                    ExampleSources.getHeader(parser.getSource())
-                                  .map(ExampleSources.Header::getExpectedNames);
+        final TestSourceParser<String> parser = withSource(src);
+        final NameDeclarations scraper = new NameDeclarations();
 
-            if (expect.isPresent()) {
-                execs.add(() -> assertThat(decls.$names()).isEqualTo(expect.get()));
-            } else {
-                execs.add(() -> assertThat(decls.$names()).isNotEmpty());
-            }
-        }
-        assertAll(execs);
+        parser.run(scraper);
+
+        assertThat(scraper.$names()).containsExactlyElementsIn(expect);
+    }
+
+    @Test
+    void circular() {
+        final String src = "" +
+                "struct A : A\n";
+
+        final Set<String> expect = Set.of("A");
+
+        final TestSourceParser<String> parser = withSource(src);
+        final NameDeclarations scraper = new NameDeclarations();
+
+        parser.run(scraper);
+
+        assertThat(scraper.$names()).containsExactlyElementsIn(expect);
+    }
+
+    @ParameterizedTest
+    @MethodSource("exampleSources")
+    void examples(File file) throws Exception {
+
+        final TestSourceParser<File> parser = withSource(file);
+        final NameDeclarations decls = parser.run(new NameDeclarations());
+        final Optional<Set<String>> expectation =
+                ExampleSources.getHeader(parser.getSource())
+                              .map(ExampleSources.Header::getExpectedNames);
+
+        assertWithMessage("Example file is missing expectations")
+                .that(expectation.isPresent()).isTrue();
+        assertThat(decls.$names()).containsExactlyElementsIn(expectation.get());
     }
 }

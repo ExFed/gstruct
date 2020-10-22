@@ -9,7 +9,9 @@
       'BoolLike',
       'Data',
       'Value',
-      'FakeNews'
+      'FakeNews',
+      'Deferred',
+      'LateBloomer'
   ]
 */
 
@@ -31,6 +33,10 @@ typedef Value : Number {
 }
 
 // verify specifier w/ string ref
-typedef FakeNews : 'BoolLike'  {
+typedef FakeNews : 'BoolLike' {
     description = 'consists of alternative facts'
 }
+
+// out-of-order definition
+typedef Deferred : 'LateBloomer'
+typedef LateBloomer : primitive

@@ -51,6 +51,14 @@ public class TestSourceParser<S> {
         return source;
     }
 
+    /**
+     * Runs the script against the given delegate.
+     *
+     * @param delegate Delegate object to run the script against.
+     * @param <T>      Type of the delegate object.
+     *
+     * @return The delegate object.
+     */
     public <T> T run(T delegate) {
         synchronized (script) {
             script.setDelegate(delegate);
@@ -59,6 +67,14 @@ public class TestSourceParser<S> {
         }
     }
 
+    /**
+     * Runs the script and binding against a delegate produced by the given factory.
+     *
+     * @param delegateFactory Factory that provides a delegate with the script binding.
+     * @param <T>             Type of the delegate object.
+     *
+     * @return The delegate object.
+     */
     public <T> T run(Function<Binding, T> delegateFactory) {
         return run(delegateFactory.apply(getBinding()));
     }

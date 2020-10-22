@@ -6,7 +6,6 @@ import com.columnzero.gstruct.lang.grammar.FileSpec;
 import com.columnzero.gstruct.lang.grammar.PackageSpec;
 import com.columnzero.gstruct.lang.grammar.RefSpec;
 import com.columnzero.gstruct.lang.grammar.StructSpec;
-import groovy.lang.Binding;
 import groovy.lang.Closure;
 import org.tinylog.Logger;
 
@@ -20,12 +19,22 @@ public class NameDeclarations implements FieldSpec,
                                          PackageSpec,
                                          StructSpec,
                                          DocumentationSpec {
+    // an empty value
+    private static final Object EMPTY = new Object();
+
+    // a closure that returns an empty value
+    private static final Closure<Object> EMPTY_CLOSURE = new Closure<>(null) {
+        @Override
+        public Object call(Object... args) {
+            return EMPTY;
+        }
+    };
+
+    private static final Set<String> KEYWORDS = Set.of("typedef", "struct", "field");
 
     private final Set<String> $names = new LinkedHashSet<>();
-    private final Binding $binding;
 
-    public NameDeclarations(Binding binding) {
-        this.$binding = binding;
+    public NameDeclarations() {
     }
 
     public Set<String> $names() {
@@ -67,11 +76,18 @@ public class NameDeclarations implements FieldSpec,
             if (!this.$names.add(name)) {
                 Logger.warn("Duplicate name declared: {}", name);
             }
-            this.$binding.setVariable(name, new Closure<Void>(null) {
-                public Void call(Object... args) {
-                    return null;
-                }
-            });
         }
+    }
+
+    // ignores RHS expressions
+    @SuppressWarnings("unused")
+    private Object methodMissing(String methodName, Object argsObj) {
+        return EMPTY_CLOSURE;
+    }
+
+    // ignores RHS expressions
+    @SuppressWarnings("unused")
+    private Object propertyMissing(String name) {
+        return EMPTY_CLOSURE;
     }
 }
