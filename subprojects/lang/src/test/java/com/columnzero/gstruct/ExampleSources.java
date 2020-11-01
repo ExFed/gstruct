@@ -7,6 +7,7 @@ import org.tomlj.TomlParseResult;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -53,6 +54,19 @@ public class ExampleSources {
         return dir;
     }
 
+    /**
+     * Walks all source files in the examples directory that end in ".gsml"
+     *
+     * @return A stream of files.
+     *
+     * @throws IOException If there is error while walking the file tree.
+     */
+    public static Stream<File> walkExamples() throws IOException {
+        return Files.walk(ExampleSources.getExamplesDir())
+                    .map(Path::toFile)
+                    .filter(File::isFile)
+                    .filter(f -> f.getName().endsWith(".gsml"));
+    }
 
     /**
      * Gets a YAML-formatted example header if it exists.

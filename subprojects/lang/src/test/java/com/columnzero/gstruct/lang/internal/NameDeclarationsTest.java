@@ -2,15 +2,12 @@ package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.TestSourceParser;
-import groovy.lang.Binding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,14 +33,6 @@ class NameDeclarationsTest {
         parser.run(scraper);
 
         assertThat(scraper.$names()).containsExactlyElementsIn(expect);
-    }
-
-    static Stream<File> exampleSources() throws IOException {
-        // get all source files in the examples directory that end in ".gsml"
-        return Files.walk(ExampleSources.getExamplesDir())
-                    .map(Path::toFile)
-                    .filter(File::isFile)
-                    .filter(f -> f.getName().endsWith(".gsml"));
     }
 
     @Test
@@ -81,8 +70,12 @@ class NameDeclarationsTest {
         assertThat(scraper.$names()).containsExactlyElementsIn(expect);
     }
 
+    static Stream<File> examplesSource() throws IOException {
+        return ExampleSources.walkExamples();
+    }
+
     @ParameterizedTest
-    @MethodSource("exampleSources")
+    @MethodSource("examplesSource")
     void examples(File file) throws Exception {
 
         final TestSourceParser<File> parser = withSource(file);
