@@ -1,5 +1,8 @@
 package com.columnzero.gstruct.util;
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,11 +28,12 @@ import static java.util.Objects.requireNonNull;
  * @see Object#hashCode()
  * @see Object#equals(Object)
  */
+@EqualsAndHashCode
 public class Trie<T, V> {
 
-    private final Node root = new Node();
-
     private int size = 0;
+
+    private final @NonNull Node root = new Node();
 
     public int size() {
         return size;
@@ -145,6 +149,7 @@ public class Trie<T, V> {
     /**
      * A node within the tree.
      */
+    @EqualsAndHashCode
     private final class Node implements PrefixNode<T, V> {
 
         private final Map<T, Node> children = new LinkedHashMap<>();

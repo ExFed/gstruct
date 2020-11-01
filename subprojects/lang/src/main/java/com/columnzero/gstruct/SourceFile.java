@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.lang;
+package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.Paths;
@@ -10,7 +10,7 @@ import java.io.File;
 /**
  * Represents a source file.
  */
-@Value
+@Value(staticConstructor = "sourceFile")
 public class SourceFile {
 
     @NonNull File file;
