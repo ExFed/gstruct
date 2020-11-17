@@ -1,26 +1,31 @@
-package com.columnzero.gstruct;
+package com.columnzero.gstruct.lang;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
-import groovy.lang.Script;
 import groovy.util.DelegatingScript;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
-public class TestSourceParser<S> {
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Parser<S> {
 
     private static final DummyClosure PRIMITIVE = new DummyClosure();
 
-    public static TestSourceParser<String> withSource(String src) {
-        return new TestSourceParser<>(setupGroovyShell().parse(src), src);
+    public static Parser<String> withSource(String src) {
+        return new Parser<>((DelegatingScript) setupGroovyShell().parse(src), src);
     }
 
-    public static TestSourceParser<File> withSource(File file) throws IOException {
-        return new TestSourceParser<>(setupGroovyShell().parse(file), file);
+    public static Parser<File> withSource(File file) throws IOException {
+        return new Parser<>((DelegatingScript) setupGroovyShell().parse(file), file);
     }
 
     private static GroovyShell setupGroovyShell() {
@@ -35,20 +40,11 @@ public class TestSourceParser<S> {
         binding.setVariable("primitive", PRIMITIVE);
     }
 
-    private final DelegatingScript script;
-    private final S source;
-
-    private TestSourceParser(Script script, S source) {
-        this.script = (DelegatingScript) script;
-        this.source = source;
-    }
+    private final @NonNull DelegatingScript script;
+    private final @NonNull S source;
 
     public Binding getBinding() {
         return script.getBinding();
-    }
-
-    public S getSource() {
-        return source;
     }
 
     /**

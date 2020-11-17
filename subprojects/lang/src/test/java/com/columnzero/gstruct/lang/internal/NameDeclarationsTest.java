@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.ExampleSources;
-import com.columnzero.gstruct.TestSourceParser;
+import com.columnzero.gstruct.lang.Parser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.columnzero.gstruct.TestSourceParser.withSource;
+import static com.columnzero.gstruct.lang.Parser.withSource;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -27,7 +27,7 @@ class NameDeclarationsTest {
 
         final Set<String> expect = Set.of("String", "Number", "Bool");
 
-        final TestSourceParser<String> parser = withSource(src);
+        final Parser<String> parser = withSource(src);
         final NameDeclarations scraper = new NameDeclarations();
 
         parser.run(scraper);
@@ -47,7 +47,7 @@ class NameDeclarationsTest {
 
         final Set<String> expect = Set.of("A", "B", "C", "X", "Y", "Z");
 
-        final TestSourceParser<String> parser = withSource(src);
+        final Parser<String> parser = withSource(src);
         final NameDeclarations scraper = new NameDeclarations();
 
         parser.run(scraper);
@@ -62,7 +62,7 @@ class NameDeclarationsTest {
 
         final Set<String> expect = Set.of("A");
 
-        final TestSourceParser<String> parser = withSource(src);
+        final Parser<String> parser = withSource(src);
         final NameDeclarations scraper = new NameDeclarations();
 
         parser.run(scraper);
@@ -78,7 +78,7 @@ class NameDeclarationsTest {
     @MethodSource("examplesSource")
     void examples(File file) throws Exception {
 
-        final TestSourceParser<File> parser = withSource(file);
+        final Parser<File> parser = withSource(file);
         final NameDeclarations decls = parser.run(new NameDeclarations());
         final Optional<Set<String>> expectation =
                 ExampleSources.getHeader(parser.getSource())
