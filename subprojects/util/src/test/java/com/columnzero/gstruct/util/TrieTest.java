@@ -1,7 +1,5 @@
 package com.columnzero.gstruct.util;
 
-import com.columnzero.gstruct.util.Path;
-import com.columnzero.gstruct.util.Trie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -21,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TrieTest {
 
     private Trie<Integer, String> cut;
-    private Map<Iterable<Integer>, String> data;
+    private Map<Path<Integer>, String> data;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +39,7 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         final AtomicInteger i = new AtomicInteger(0);
-        for (Entry<Iterable<Integer>, String> d : data.entrySet()) {
+        for (Entry<Path<Integer>, String> d : data.entrySet()) {
             exec.add(() -> {
                 cut.put(d.getKey(), d.getValue());
                 assertThat(cut.size()).isEqualTo(i.incrementAndGet());
@@ -57,7 +55,7 @@ class TrieTest {
 
         final Stream.Builder<Executable> exec = Stream.builder();
 
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.get(e.getKey())).isEqualTo(e.getValue()));
         }
 
@@ -77,12 +75,12 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         // insert data into empty trie
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.put(e.getKey(), e.getValue())).isEqualTo(null));
         }
 
         // overwrite existing elements
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.put(e.getKey(), null)).isEqualTo(e.getValue()));
         }
 
@@ -99,12 +97,12 @@ class TrieTest {
         final Stream.Builder<Executable> exec = Stream.builder();
 
         // remove existing data
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.remove(e.getKey())).isEqualTo(e.getValue()));
         }
 
         // remove removed data
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.remove(e.getKey())).isEqualTo(null));
         }
 
@@ -119,8 +117,8 @@ class TrieTest {
     @Test
     void entrySet() {
         cut.putAll(data);
-        final Set<Entry<Iterable<Integer>, String>> actual = cut.entrySet();
-        final Set<Entry<Iterable<Integer>, String>> expect = data.entrySet();
+        final Set<Entry<Path<Integer>, String>> actual = cut.entrySet();
+        final Set<Entry<Path<Integer>, String>> expect = data.entrySet();
         assertThat(actual).isEqualTo(expect);
     }
 
@@ -130,7 +128,7 @@ class TrieTest {
 
         cut.putAll(data);
 
-        for (Entry<Iterable<Integer>, String> e : data.entrySet()) {
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
             exec.add(() -> assertThat(cut.containsKey(e.getKey())).isTrue());
         }
 

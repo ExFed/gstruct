@@ -1,18 +1,19 @@
 package com.columnzero.gstruct;
 
+import com.columnzero.gstruct.lang.Namespace;
 import com.columnzero.gstruct.lang.TestFileUtil;
-import com.columnzero.gstruct.util.Path;
-import com.columnzero.gstruct.util.Trie;
-import com.columnzero.gstruct.util.function.NoOp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.columnzero.gstruct.SourceFile.sourceFile;
+import static com.columnzero.gstruct.lang.Namespace.from;
 import static com.google.common.truth.Truth.assertThat;
 
 class SourceTreeTest {
@@ -39,14 +40,15 @@ class SourceTreeTest {
     void getNamespaces() throws IOException {
         final SourceTree.Root root = SourceTree.root(tempDir);
         final SourceTree gsmlTree = root.select("gsml");
-        final Trie<String, SourceFile> expect =
+        final Map<SourceFile, Namespace> expect =
                 TEST_FILES.stream()
                           .filter(s -> s.endsWith(".gsml"))
-                          .collect(Trie::new,
-                                   (t, s) -> t.put(Path.of(s.split("/")).getParent(),
-                                                   sourceFile(new File(tempDir, s))),
-                                   NoOp::noopVoid);
-        final Trie<String, SourceFile> actual = gsmlTree.getNamespaces();
+                          .collect(LinkedHashMap::new,
+                                   (t, s) -> t.put(sourceFile(new File(tempDir, s)),
+                                                   from(s.split("/")).getParent()),
+                                   Map::putAll);
+
+        final Map<SourceFile, Namespace> actual = gsmlTree.getNamespaces();
         assertThat(actual).isEqualTo(expect);
     }
 }

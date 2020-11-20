@@ -1,8 +1,11 @@
 package com.columnzero.gstruct;
 
+import lombok.Value;
+
 /**
  * A graph of types, metadata, and type relationships.
  */
-public interface TypeGraph {
+@Value
+public class TypeGraph {
 
 }

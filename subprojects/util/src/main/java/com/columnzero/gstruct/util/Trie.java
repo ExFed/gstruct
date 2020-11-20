@@ -49,7 +49,7 @@ public class Trie<T, V> {
         return node == null ? null : node.getValue();
     }
 
-    public V put(Iterable<? extends T> key, V value) {
+    public V put(Path<? extends T> key, V value) {
         final Node node = makeNode(key);
 
         if (!node.hasValue()) {
@@ -61,8 +61,12 @@ public class Trie<T, V> {
         return oldValue;
     }
 
-    public void putAll(Map<? extends Iterable<T>, ? extends V> map) {
+    public void putAll(Map<? extends Path<T>, ? extends V> map) {
         putAllEntries(map.entrySet());
+    }
+
+    public void putAll(Trie<? extends T, ? extends V> trie) {
+        putAllEntries(trie.entrySet());
     }
 
     public V remove(Object key) {
@@ -81,7 +85,7 @@ public class Trie<T, V> {
         return oldValue;
     }
 
-    public Set<Entry<Iterable<T>, V>> entrySet() {
+    public Set<Entry<Path<T>, V>> entrySet() {
         return entrySetRecurse(new NodeEntrySet(),
                                Path.getRoot(),
                                root);
@@ -96,12 +100,12 @@ public class Trie<T, V> {
      * Iteratively searches for the node at the given key, returns null if none found.
      */
     private Node findNode(Object key) {
-        if (!(key instanceof Iterable)) {
+        if (!(key instanceof Path)) {
             return null;
         }
 
         Node node = root;
-        for (Object keyToken : (Iterable<?>) key) {
+        for (Object keyToken : (Path<?>) key) {
             if (!node.hasChild(keyToken)) {
                 return null;
             }
@@ -113,7 +117,7 @@ public class Trie<T, V> {
     /**
      * Iteratively makes a new node at the given key if it doesn't already exist.
      */
-    private Node makeNode(Iterable<? extends T> key) {
+    private Node makeNode(Path<? extends T> key) {
         Node node = root;
         for (T keyToken : key) {
             node = node.putChildIfAbsent(keyToken);
@@ -124,9 +128,9 @@ public class Trie<T, V> {
     /**
      * Recursively accumulates depth-first for nodes that have value.
      */
-    private Set<Entry<Iterable<T>, V>> entrySetRecurse(NodeEntrySet entries,
-                                                       Path<T> key,
-                                                       Node node) {
+    private Set<Entry<Path<T>, V>> entrySetRecurse(NodeEntrySet entries,
+                                                   Path<T> key,
+                                                   Node node) {
         if (node.hasValue()) {
             entries.inner.add(new NodeEntry(key, node));
         }
@@ -139,9 +143,9 @@ public class Trie<T, V> {
         return entries.inner;
     }
 
-    private void putAllEntries(Set<? extends Entry<? extends Iterable<? extends T>, ? extends V>> eSet) {
+    private void putAllEntries(Set<? extends Entry<? extends Path<? extends T>, ? extends V>> eSet) {
 
-        for (Entry<? extends Iterable<? extends T>, ? extends V> e : eSet) {
+        for (Entry<? extends Path<? extends T>, ? extends V> e : eSet) {
             put(e.getKey(), e.getValue());
         }
     }
@@ -213,11 +217,11 @@ public class Trie<T, V> {
     /**
      * A set of entries.
      */
-    private final class NodeEntrySet extends AbstractSet<Entry<Iterable<T>, V>> {
-        private final Set<Entry<Iterable<T>, V>> inner = new LinkedHashSet<>();
+    private final class NodeEntrySet extends AbstractSet<Entry<Path<T>, V>> {
+        private final Set<Entry<Path<T>, V>> inner = new LinkedHashSet<>();
 
         @Override
-        public Iterator<Entry<Iterable<T>, V>> iterator() {
+        public Iterator<Entry<Path<T>, V>> iterator() {
             return inner.iterator();
         }
 
@@ -230,18 +234,18 @@ public class Trie<T, V> {
     /**
      * An entry within the entry set.
      */
-    private final class NodeEntry implements Entry<Iterable<T>, V> {
+    private final class NodeEntry implements Entry<Path<T>, V> {
 
-        private final Iterable<T> key;
+        private final Path<T> key;
         private final Node node;
 
-        private NodeEntry(Iterable<T> key, Node node) {
+        private NodeEntry(Path<T> key, Node node) {
             this.key = requireNonNull(key);
             this.node = requireNonNull(node);
         }
 
         @Override
-        public Iterable<T> getKey() {
+        public Path<T> getKey() {
             return key;
         }
 

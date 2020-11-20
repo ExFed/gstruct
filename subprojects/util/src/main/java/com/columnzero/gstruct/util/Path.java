@@ -34,6 +34,20 @@ public class Path<T> implements Iterable<T> {
     }
 
     /**
+     * Creates a path that forms part of the global tree. Alias for {@link #of(Object[])}.
+     *
+     * @param elements Elements of the path. The first element is attached to the global root, the
+     *                 last element becomes a leaf.
+     * @param <T>      Type of elements within the path.
+     *
+     * @return A new path.
+     */
+    @SafeVarargs
+    public static <T> Path<T> path(T... elements) {
+        return of(elements);
+    }
+
+    /**
      * Creates a path that forms part of the global tree.
      *
      * @param elements Elements of the path. The first element is attached to the global root, the
