@@ -2,8 +2,6 @@ package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.lang.Namespace;
 import com.columnzero.gstruct.lang.TestFileUtil;
-import com.columnzero.gstruct.util.Path;
-import com.columnzero.gstruct.util.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
