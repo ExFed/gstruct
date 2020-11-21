@@ -1,7 +1,11 @@
 package com.columnzero.gstruct.util;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Iterator;
 import java.util.List;
@@ -15,59 +19,84 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class PathTest {
 
-    private final List<String> abc = asList("a", "b", "c");
+    private static final List<String> ABC = List.of("a", "b", "c");
 
     private Path<String> cut;
 
+    @BeforeEach
+    void setUp() {
+        cut = Path.of(ABC);
+    }
+
     @Test
     void properties() {
-        cut = Path.of(abc);
+        cut = Path.of(ABC);
 
         assertAll(
-                () -> assertThat(cut.getDepth()).isEqualTo(abc.size()),
+                () -> assertThat(cut.getDepth()).isEqualTo(ABC.size()),
                 () -> assertThat(cut.getValue()).isEqualTo("c"),
                 () -> assertThat(cut.getParent().getValue()).isEqualTo("b")
         );
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test
-    void construction() {
-        final Stream<Executable> pathOfCases = Stream.of(
-                asList("a/b/c".split("/")),
-                asList("x/x/x".split("/")),
-                singletonList("a"),
-                List.<String>of()
-        ).map(pl -> () -> assertThat(Path.of(pl).asList()).isEqualTo(pl));
+    static Stream<Arguments> constructionSource() {
+        final Stream<Arguments> happyCases = Stream.of(
+                arguments(asList("a/b/c".split("/")), null),
+                arguments(asList("x/x/x".split("/")), null),
+                arguments(singletonList("a"), null),
+                arguments(List.<String>of(), null)
+        );
 
         final List<String> nullStrings = null;
 
-        final Path<String> xPath = Path.of("x");
-        final Stream<Executable> errorCases = Stream.of(
-                () -> assertThrows(NullPointerException.class, () -> Path.of(nullStrings)),
-                () -> assertThrows(NullPointerException.class, () -> xPath.child((String) null)),
-                () -> assertThrows(NullPointerException.class, () -> xPath.child(nullStrings))
+        final Stream<Arguments> errorCases = Stream.of(
+                arguments(nullStrings, NullPointerException.class)
         );
 
-        final Stream<Executable> cases = Stream.of(pathOfCases, errorCases)
-                                               .reduce(Stream::concat)
-                                               .get();
-        assertAll(cases);
+        return Stream.concat(happyCases, errorCases);
+    }
+
+    @ParameterizedTest
+    @MethodSource("constructionSource")
+    void construction(List<String> pathList, Class<? extends Throwable> exceptionType) {
+        if (exceptionType == null) {
+            assertThat(Path.of(pathList)).containsExactlyElementsIn(pathList).inOrder();
+            assertThat(Path.path(pathList.toArray())).containsExactlyElementsIn(pathList).inOrder();
+        } else {
+            assertThrows(exceptionType, () -> Path.of(pathList));
+            assertThrows(exceptionType, () -> Path.path(pathList.toArray()));
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void child() {
+        final List<String> abcd = asList("a/b/c/d".split("/"));
+        final List<String> abcabc = Stream.concat(ABC.stream(), ABC.stream())
+                                          .collect(Collectors.toList());
+
+        assertThat(cut.child("d")).containsExactlyElementsIn(abcd).inOrder();
+        assertThat(cut.child(cut)).containsExactlyElementsIn(abcabc).inOrder();
+
+        assertThrows(NullPointerException.class, () -> cut.child((String) null));
+        assertThrows(NullPointerException.class, () -> cut.child((Iterable<String>) null));
     }
 
     @Test
     void pathToString() {
-        assertThat(Path.of(abc).toString()).isEqualTo("/" + String.join("/", abc));
+        assertThat(Path.of(ABC).toString()).isEqualTo("/" + String.join("/", ABC));
     }
 
     @Test
     void iterator() {
-        cut = Path.of(abc);
+        cut = Path.of(ABC);
 
-        final Iterator<String> abcIter = abc.iterator();
+        final Iterator<String> abcIter = ABC.iterator();
         final Iterator<String> cutIter = cut.iterator();
 
         final Stream.Builder<Executable> exec = Stream.builder();
@@ -86,18 +115,18 @@ class PathTest {
 
     @Test
     void spliterator() {
-        cut = Path.of(abc);
+        cut = Path.of(ABC);
 
         final List<String> actual = StreamSupport.stream(cut.spliterator(), false)
                                                  .collect(Collectors.toList());
 
-        assertThat(actual).isEqualTo(abc);
+        assertThat(actual).isEqualTo(ABC);
     }
 
     @Test
     void equalsAndHashCode() {
-        final Path<String> abc1 = Path.of(abc);
-        final Path<String> abc2 = Path.of(abc);
+        final Path<String> abc1 = Path.of(ABC);
+        final Path<String> abc2 = Path.of(ABC);
         final Path<String> xyz = Path.of("xyz".split(""));
         final Path<String> xyzabc = Path.of("xyzabc".split(""));
         final Path<String> ccc = Path.of("ccc".split(""));
