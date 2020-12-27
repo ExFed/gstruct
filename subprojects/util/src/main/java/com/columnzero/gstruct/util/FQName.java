@@ -1,10 +1,8 @@
 package com.columnzero.gstruct.util;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import io.vavr.collection.Stream;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
