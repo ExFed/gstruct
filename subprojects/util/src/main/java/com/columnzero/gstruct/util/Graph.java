@@ -1,160 +1,104 @@
 package com.columnzero.gstruct.util;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import io.vavr.collection.Set;
+import io.vavr.control.Option;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.Value;
 
 /**
- * A simple adjacency graph.
+ * A simple, immutable, directed graph.
  */
-@ToString(onlyExplicitlyIncluded = true)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Graph<N, E> {
+public interface Graph<N, E> {
+    /**
+     * Adds a new node or overwrites an existing node.
+     *
+     * @param id    Key that identifies the node.
+     * @param value Value associated with the node.
+     * @return A new immutable graph.
+     */
+    Graph<N, E> putNode(NodeId id, N value);
 
-    @EqualsAndHashCode.Include
-    private final Map<FQName, Node<N, E>> nodes = new LinkedHashMap<>();
+    /**
+     * Attempts to get the value of a node.
+     *
+     * @param id Key that identifies the node.
+     * @return {@link Option.Some} value if the node exists, otherwise
+     *         {@link Option.None}.
+     */
+    Option<N> getNodeValue(NodeId id);
 
-    public Node<N, E> addNode(FQName id) {
-        return nodes.computeIfAbsent(id, fqName -> new Node<>(this, fqName));
-    }
+    /**
+     * Gets nodes from which this node is a neighbor.
+     *
+     * @param id Key that identifies the node.
+     * @return A set of node identifiers.
+     */
+    Set<NodeId> getNeighborsOut(NodeId id);
 
-    public Optional<Node<N, E>> findNode(FQName id) {
-        return Optional.ofNullable(nodes.get(id));
-    }
+    /**
+     * Remove a node from the graph if it exists.
+     *
+     * @param id Key that identifies the node.
+     * @return A new immutable graph.
+     */
+    Graph<N, E> removeNode(NodeId id);
 
-    public Optional<Edge<N, E>> findEdge(FQName fromId, FQName toId) {
-        return findNode(fromId).flatMap(from -> from.findEdge(toId));
-    }
+    /**
+     * If both edges exist, adds a new edge or overwrites an existing edge.
+     *
+     * @param id    Key that identifies the edge.
+     * @param value Value associated with the edge.
+     * @return A new immutable graph.
+     */
+    Graph<N, E> putEdge(EdgeId id, E value);
 
-    public Set<FQName> getOutgoingNeighbors(FQName nodeId) {
-        return findNode(nodeId).map(Node::getOutgoingNeighbors)
-                               .stream()
-                               .flatMap(Collection::stream)
-                               .map(Node::getId)
-                               .collect(Collectors.toUnmodifiableSet());
-    }
+    /**
+     * Attempts to get the value of an edge.
+     *
+     * @param id Key that identifies the edge.
+     * @return {@link Option.Some} value if the edge exists, otherwise
+     *         {@link Option.None}.
+     */
+    Option<E> getEdgeValue(EdgeId id);
 
-    public boolean areAdjacent(FQName fromId, FQName toId) {
-        return findNode(fromId).flatMap(from -> findNode(toId).map(from::isAdjacentTo))
-                               .orElse(false);
-    }
+    /**
+     * Remove a edge from the graph if it exists.
+     *
+     * @param id Key that identifies the edge.
+     * @return A new immutable graph.
+     */
+    Graph<N, E> removeEdge(EdgeId id);
 
-    public void removeNode(FQName id) {
-        nodes.remove(id);
-    }
-
-    public Optional<Edge<N, E>> addEdge(FQName fromId, FQName toId) {
-        return findNode(fromId).flatMap(from -> findNode(toId).map(from::addEdge));
-    }
-
-    public void removeEdge(FQName fromId, FQName toId) {
-        findEdge(fromId, toId).ifPresent(Edge::remove);
-    }
-
-    @ToString.Include(name = "nodes")
-    public Collection<Node<N, E>> getNodes() {
-        return Collections.unmodifiableCollection(nodes.values());
-    }
-
-    @ToString.Include(name = "edges")
-    public Collection<Edge<N, E>> getEdges() {
-        return nodes.values()
-                    .stream()
-                    .map(Node::getEdgesOut)
-                    .map(Map::values)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toUnmodifiableList());
-    }
-
-    @Data
-    @ToString(onlyExplicitlyIncluded = true)
-    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Node<N, E> {
-        private final @NonNull Graph<N, E> graph;
-
-        @ToString.Include
-        @EqualsAndHashCode.Include
-        private final @NonNull FQName id;
-
-        @ToString.Include
-        private N value;
-
-        private final Map<FQName, Edge<N, E>> edgesOut = new LinkedHashMap<>();
-
-        public boolean isAdjacentTo(Node<N, E> other) {
-            return edgesOut.containsKey(other.getId());
+    @Value(staticConstructor = "of")
+    static class NodeId implements Comparable<NodeId> {
+        public static NodeId of(String first, String... tail) {
+            return of(FQName.of(first, tail));
         }
 
-        public Set<Node<N, E>> getOutgoingNeighbors() {
-            return edgesOut.values()
-                           .stream()
-                           .map(Edge::getTo)
-                           .collect(Collectors.toCollection(LinkedHashSet::new));
-        }
+        @NonNull
+        FQName value;
 
-        public void remove() {
-            graph.removeNode(this.getId());
-        }
-
-        public Edge<N, E> addEdge(Node<N, E> target) {
-            return edgesOut.computeIfAbsent(target.getId(),
-                                            id -> new Edge<>(graph, this, target));
-        }
-
-        public boolean hasEdge(Edge<N, E> edge) {
-            return edgesOut.containsKey(edge.getTo().getId());
-        }
-
-        private Optional<Edge<N, E>> findEdge(FQName toNodeId) {
-            return Optional.ofNullable(edgesOut.get(toNodeId));
+        @Override
+        public int compareTo(NodeId o) {
+            return this.getValue().compareTo(o.getValue());
         }
     }
 
-    @Data
-    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    @ToString(onlyExplicitlyIncluded = true)
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Edge<N, E> {
-        private final @NonNull Graph<N, E> graph;
+    @Value(staticConstructor = "of")
+    static class EdgeId implements Comparable<EdgeId> {
+        @NonNull
+        NodeId from;
+        @NonNull
+        NodeId to;
 
-        @EqualsAndHashCode.Include
-        private final @NonNull Node<N, E> from;
-
-        @EqualsAndHashCode.Include
-        private final @NonNull Node<N, E> to;
-
-        @ToString.Include(rank = -1)
-        private E value;
-
-        public boolean isIncidentTo(Edge<N, E> edge) {
-            return to.hasEdge(edge);
+        @Override
+        public int compareTo(EdgeId o) {
+            return compareToForward(o);
         }
 
-        public void remove() {
-            from.edgesOut.remove(to.getId());
-        }
-
-        @ToString.Include(name = "from")
-        private FQName getFromId() {
-            return from.getId();
-        }
-
-        @ToString.Include(name = "to")
-        private FQName getToId() {
-            return to.getId();
+        private int compareToForward(EdgeId o) {
+            final var fromCmp = this.getFrom().compareTo(o.getFrom());
+            return 0 != fromCmp ? fromCmp : this.getTo().compareTo(o.getTo());
         }
     }
 }

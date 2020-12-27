@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.util;
 
-import com.columnzero.gstruct.util.Graph.Edge;
-import com.columnzero.gstruct.util.Graph.Node;
+import com.columnzero.gstruct.util.MutableGraph.Edge;
+import com.columnzero.gstruct.util.MutableGraph.Node;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,16 +9,16 @@ import java.util.Map;
 
 import static com.google.common.truth.Truth.assertThat;
 
-class GraphTest {
+class MutableGraphTest {
 
     private final String nodeVal0 = "foo";
     private final String edgeVal0 = "bar";
-    private Graph<String, String> graph;
-    private final FQName idAbc = FQName.of("c", "a", "b");
+    private final FQName idAbc = FQName.of("a", "b", "c");
+    private MutableGraph<String, String> graph;
 
     @BeforeEach
     void setUp() {
-        graph = new Graph<>();
+        graph = new MutableGraph<>();
     }
 
     @Test
