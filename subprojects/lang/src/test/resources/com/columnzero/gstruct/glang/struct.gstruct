@@ -1,4 +1,0 @@
-struct Object: {
-    description = 'stuff and things'
-    field data: GLOBAL.Primitive
-}

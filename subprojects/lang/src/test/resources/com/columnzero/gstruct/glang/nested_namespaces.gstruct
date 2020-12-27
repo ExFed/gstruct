@@ -1,7 +1,0 @@
-namespace x {
-    namespace y {
-        namespace z {
-            type FooBar: GLOBAL.Primitive
-        }
-    }
-}
