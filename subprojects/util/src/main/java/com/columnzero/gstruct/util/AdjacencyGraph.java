@@ -1,11 +1,11 @@
 package com.columnzero.gstruct.util;
 
-import io.vavr.collection.LinkedHashMap;
-import io.vavr.collection.LinkedHashMultimap;
 import io.vavr.collection.LinkedHashSet;
 import io.vavr.collection.Map;
 import io.vavr.collection.Multimap;
 import io.vavr.collection.Set;
+import io.vavr.collection.TreeMap;
+import io.vavr.collection.TreeMultimap;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,9 +19,9 @@ import lombok.Value;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AdjacencyGraph<N, E> implements Graph<N, E> {
     public static <N, E> AdjacencyGraph<N, E> empty() {
-        return new AdjacencyGraph<>(LinkedHashMap.empty(),
-                                    LinkedHashMap.empty(),
-                                    LinkedHashMultimap.withSet().empty());
+        return new AdjacencyGraph<>(TreeMap.empty(),
+                                    TreeMap.empty(),
+                                    TreeMultimap.withSet().empty());
     }
 
     private @NonNull Map<NodeId, N> nodes;
