@@ -1,8 +1,10 @@
 package com.columnzero.gstruct.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
+import io.vavr.collection.Stream;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -16,8 +18,8 @@ public class FQName implements Comparable<FQName> {
         return new FQName(path.getValue(), path.getParent());
     }
 
-    public static FQName of(String rootName, String... tokens) {
-        final var path = Path.of(rootName).child(Arrays.asList(tokens));
+    public static FQName of(String pathHead, String... pathTail) {
+        final var path = Path.of(pathHead).child(Arrays.asList(pathTail));
         return new FQName(path.getValue(), path.getParent());
     }
 
@@ -31,28 +33,20 @@ public class FQName implements Comparable<FQName> {
 
     @Override
     public int compareTo(FQName that) {
-        final var thisNsIter = this.getNamespace().iterator();
-        final var thatNsIter = that.getNamespace().iterator();
+        final var these = Stream.concat(this.getNamespace(), Stream.of(this.getName()));
+        final var those = Stream.concat(that.getNamespace(), Stream.of(that.getName()));
+        return compareIter(these, those);
+    }
 
-        int cmp;
-        while (thisNsIter.hasNext() && thatNsIter.hasNext()) {
-            cmp = thisNsIter.next().compareTo(thatNsIter.next());
-            if (0 != cmp) {
-                return cmp;
+    private <E extends Comparable<E>> int compareIter(Iterable<E> a, Iterable<E> b) {
+        final var aIt = a.iterator();
+        final var bIt = b.iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            final var comparison = aIt.next().compareTo(bIt.next());
+            if (0 != comparison) {
+                return comparison;
             }
         }
-
-        // final var thisEndNode = thisNsIter.hasNext() ? thisNsIter.next() : this.getName();
-        // final var thatEndNode = thatNsIter.hasNext() ? thatNsIter.next() : that.getName();
-
-        if (thisNsIter.hasNext()) {
-            cmp = thisNsIter.next().compareTo(that.getName());
-            return 0 != cmp ? cmp : 1;
-        } else if (thatNsIter.hasNext()) {
-            cmp = this.getName().compareTo(thatNsIter.next());
-            return 0 != cmp ? cmp : -1;
-        } else {
-            return this.getName().compareTo(that.getName());
-        }
+        return aIt.hasNext() ? 1 : bIt.hasNext() ? -1 : 0;
     }
 }
