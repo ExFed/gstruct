@@ -14,11 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
+import com.columnzero.gstruct.lang.grammar.RefSpec;
+import com.columnzero.gstruct.util.Path;
+
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Parser<S> {
-
-    private static final DummyClosure PRIMITIVE = new DummyClosure();
 
     public static Parser<String> withSource(String src) {
         return new Parser<>((DelegatingScript) setupGroovyShell().parse(src), src);
@@ -31,13 +32,7 @@ public class Parser<S> {
     private static GroovyShell setupGroovyShell() {
         final CompilerConfiguration config = new CompilerConfiguration();
         config.setScriptBaseClass(DelegatingScript.class.getName());
-        final Binding binding = new Binding();
-        bindKeywords(binding);
-        return new GroovyShell(binding, config);
-    }
-
-    private static void bindKeywords(Binding binding) {
-        binding.setVariable("primitive", PRIMITIVE);
+        return new GroovyShell(config);
     }
 
     private final @NonNull DelegatingScript script;

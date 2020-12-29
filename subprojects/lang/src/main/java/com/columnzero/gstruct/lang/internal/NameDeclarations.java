@@ -6,6 +6,8 @@ import com.columnzero.gstruct.lang.grammar.FileSpec;
 import com.columnzero.gstruct.lang.grammar.PackageSpec;
 import com.columnzero.gstruct.lang.grammar.RefSpec;
 import com.columnzero.gstruct.lang.grammar.StructSpec;
+import com.columnzero.gstruct.util.Path;
+
 import groovy.lang.Closure;
 import org.tinylog.Logger;
 
@@ -30,8 +32,6 @@ public class NameDeclarations implements FieldSpec,
         }
     };
 
-    private static final Set<String> KEYWORDS = Set.of("typedef", "struct", "field");
-
     private final Set<String> $names = new LinkedHashSet<>();
 
     public NameDeclarations() {
@@ -41,9 +41,12 @@ public class NameDeclarations implements FieldSpec,
         return Collections.unmodifiableSet($names);
     }
 
-    @Override
-    public void typedef(Map<String, Closure<RefSpec>> typeDef) {
-        addNames(typeDef.keySet());
+    public RefSpec primitive(Closure<?> def) {
+        return getPrimitive();
+    }
+
+    public RefSpec getPrimitive() {
+        return () -> Path.of("primitive");
     }
 
     @Override
@@ -57,8 +60,8 @@ public class NameDeclarations implements FieldSpec,
     }
 
     @Override
-    public void include(String included) {
-        // noop
+    public void using(Map<String, RefSpec> aliases) {
+        $names.addAll(aliases.keySet());
     }
 
     @Override

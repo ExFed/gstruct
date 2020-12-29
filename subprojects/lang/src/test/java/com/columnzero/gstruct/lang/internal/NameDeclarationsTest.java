@@ -21,9 +21,9 @@ class NameDeclarationsTest {
     @Test
     void parseSomePrimitives() {
         final String src = "" +
-                "typedef String : primitive\n" +
-                "typedef Number : primitive\n" +
-                "typedef Bool : primitive\n";
+                "using String : primitive\n" +
+                "using Number : primitive\n" +
+                "using Bool : primitive\n";
 
         final Set<String> expect = Set.of("String", "Number", "Bool");
 
@@ -40,12 +40,9 @@ class NameDeclarationsTest {
         final String src = "" +
                 "struct A : primitive {}\n" +
                 "struct B : A {}\n" +
-                "struct C : {}\n" +
-                "typedef X : primitive {}\n" +
-                "typedef Y : X {}\n" +
-                "typedef Z : {}\n";
+                "struct C : {}\n";
 
-        final Set<String> expect = Set.of("A", "B", "C", "X", "Y", "Z");
+        final Set<String> expect = Set.of("A", "B", "C");
 
         final Parser<String> parser = withSource(src);
         final NameDeclarations scraper = new NameDeclarations();
