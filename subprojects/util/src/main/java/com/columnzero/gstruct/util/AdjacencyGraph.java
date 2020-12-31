@@ -24,13 +24,13 @@ public class AdjacencyGraph<N, E> implements Graph<N, E> {
                                     TreeMultimap.withSet().empty());
     }
 
-    private @NonNull Map<NodeId, N> nodes;
-    private @NonNull Map<EdgeId, E> edges;
+    @NonNull Map<NodeId, N> nodes;
+    @NonNull Map<EdgeId, E> edges;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Getter(AccessLevel.PRIVATE)
-    private @NonNull Multimap<NodeId, NodeId> adjacency;
+    @NonNull Multimap<NodeId, NodeId> adjacency;
 
     @Override
     public AdjacencyGraph<N, E> putNode(NodeId id, N value) {

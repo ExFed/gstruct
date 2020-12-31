@@ -1,6 +1,6 @@
 package com.columnzero.gstruct;
 
-import com.columnzero.gstruct.lang.Namespace;
+import com.columnzero.gstruct.util.Path;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -47,9 +47,9 @@ public class SourceTree {
      *
      * @return A namespace trie.
      */
-    public Map<SourceFile, Namespace> getNamespaces() {
+    public Map<SourceFile, Path<String>> getNamespaces() {
 
-        final Map<SourceFile, Namespace> namespaces = new LinkedHashMap<>();
+        final Map<SourceFile, Path<String>> namespaces = new LinkedHashMap<>();
         for (SourceFile source : getFiles()) {
             final File rootDir = getRootDirectory();
             final var namespace = source.getNamespace(rootDir);

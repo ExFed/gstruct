@@ -1,8 +1,8 @@
 package com.columnzero.gstruct;
 
-import com.columnzero.gstruct.lang.Namespace;
 import com.columnzero.gstruct.lang.Parser;
 import com.columnzero.gstruct.lang.internal.NameDeclarations;
+import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.function.Mapper;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class GStruct {
         decl.getDelegate()
             .$names()
             .stream()
-            .map(name -> decl.getNamespace().getPath().child(name).toString())
+            .map(name -> decl.getNamespace().child(name).toString())
             .forEach(System.out::println);
     }
 
@@ -50,7 +50,7 @@ public class GStruct {
      * @return A new type graph.
      */
     public TypeGraph compile(SourceTree sourceTree) {
-        final Map<SourceFile, Namespace> sourceFiles = sourceTree.getNamespaces();
+        final Map<SourceFile, Path<String>> sourceFiles = sourceTree.getNamespaces();
         sourceFiles.entrySet()
                    .stream()
                    .map(value -> Result.success(value)
@@ -64,11 +64,11 @@ public class GStruct {
     @Value
     private static class Init {
 
-        public static Init accept(Map.Entry<SourceFile, Namespace> entry)
+        public static Init accept(Map.Entry<SourceFile, Path<String>> entry)
                 throws CompileException {
             try {
                 final Parser<File> parser = Parser.withSource(entry.getKey().getFile());
-                final Namespace namespace = entry.getValue();
+                final Path<String> namespace = entry.getValue();
                 return new Init(parser, namespace);
             } catch (IOException e) {
                 throw new CompileException(e);
@@ -76,7 +76,7 @@ public class GStruct {
         }
 
         @NonNull Parser<File> parser;
-        @NonNull Namespace namespace;
+        @NonNull Path<String> namespace;
     }
 
     @Value
@@ -90,7 +90,7 @@ public class GStruct {
         @NonNull Init init;
         @NonNull NameDeclarations delegate;
 
-        public Namespace getNamespace() {
+        public Path<String> getNamespace() {
             return init.getNamespace();
         }
     }

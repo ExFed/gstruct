@@ -82,7 +82,7 @@ public class Compiler {
             return new BreadthFirst<>(Queue.empty());
         }
 
-        private @NonNull Queue<T> nodes;
+        private final @NonNull Queue<T> nodes;
 
         @Override
         public BreadthFirst<T> put(T element) {

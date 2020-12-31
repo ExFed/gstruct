@@ -14,9 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
-import com.columnzero.gstruct.lang.grammar.RefSpec;
-import com.columnzero.gstruct.util.Path;
-
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Parser<S> {

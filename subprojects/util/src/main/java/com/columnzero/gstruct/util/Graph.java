@@ -70,7 +70,7 @@ public interface Graph<N, E> {
     Graph<N, E> removeEdge(EdgeId id);
 
     @Value(staticConstructor = "of")
-    static class NodeId implements Comparable<NodeId> {
+    class NodeId implements Comparable<NodeId> {
         public static NodeId of(String first, String... tail) {
             return of(FQName.of(first, tail));
         }
@@ -85,7 +85,7 @@ public interface Graph<N, E> {
     }
 
     @Value(staticConstructor = "of")
-    static class EdgeId implements Comparable<EdgeId> {
+    class EdgeId implements Comparable<EdgeId> {
         @NonNull
         NodeId from;
         @NonNull

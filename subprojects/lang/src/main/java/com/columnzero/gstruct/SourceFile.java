@@ -1,6 +1,6 @@
 package com.columnzero.gstruct;
 
-import com.columnzero.gstruct.lang.Namespace;
+import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.Paths;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,7 +30,7 @@ public class SourceFile {
      *
      * @return The namespace of the file.
      */
-    public Namespace getNamespace(File rootDir) {
-        return Namespace.namespace(Paths.from(this.file.getParentFile(), rootDir));
+    public Path<String> getNamespace(File rootDir) {
+        return Paths.from(this.file.getParentFile(), rootDir);
     }
 }

@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.lang.grammar;
 
-import com.columnzero.gstruct.util.Path;
+import com.columnzero.gstruct.util.FQName;
 
 public interface RefSpec {
-    Path<String> getPath();
+    FQName dereference();
 }

@@ -1,7 +1,8 @@
 package com.columnzero.gstruct;
 
-import com.columnzero.gstruct.lang.Namespace;
 import com.columnzero.gstruct.lang.TestFileUtil;
+import com.columnzero.gstruct.util.FQName;
+import com.columnzero.gstruct.util.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +22,7 @@ class SourceFileTest {
     File tempDir;
 
     static final List<String> FILENAMES = List.of(
-            "foobar.gsml",
+            "x/foobar.gsml",
             "foo/bar/biz.gsml"
     );
 
@@ -34,12 +35,12 @@ class SourceFileTest {
 
     private static Stream<Arguments> getNamespaceSource() {
         return FILENAMES.stream()
-                        .map(s -> arguments(s, Namespace.from(s.split("/")).getParent()));
+                        .map(s -> arguments(s, FQName.fromString(s).getNamespace()));
     }
 
     @ParameterizedTest
     @MethodSource("getNamespaceSource")
-    void getNamespace(String filePath, Namespace expect) {
+    void getNamespace(String filePath, Path<String> expect) {
 
         final File file = new File(tempDir, filePath);
         final SourceFile sourceFile = new SourceFile(file);

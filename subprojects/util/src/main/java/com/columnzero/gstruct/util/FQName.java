@@ -8,6 +8,9 @@ import lombok.Value;
 
 @Value
 public class FQName implements Comparable<FQName> {
+
+    public static final String SEPARATOR = "/";
+
     public static FQName of(Path<String> path) {
         if (path.getDepth() < 1) {
             throw new IllegalArgumentException("Path must have at least one element");
@@ -21,12 +24,16 @@ public class FQName implements Comparable<FQName> {
         return new FQName(path.getValue(), path.getParent());
     }
 
+    public static FQName fromString(String str) {
+        return of(Path.of(str.split(SEPARATOR)));
+    }
+
     @NonNull String name;
     @NonNull Path<String> namespace;
 
     @Override
     public String toString() {
-        return namespace.toString("/") + "/" + name;
+        return namespace.toString(SEPARATOR) + SEPARATOR + name;
     }
 
     @Override
