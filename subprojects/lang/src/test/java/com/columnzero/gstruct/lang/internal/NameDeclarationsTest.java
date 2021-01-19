@@ -68,7 +68,7 @@ class NameDeclarationsTest {
     }
 
     static Stream<File> examplesSource() throws IOException {
-        return ExampleSources.walkExamples();
+        return ExampleSources.walkExamples(".gsml");
     }
 
     @ParameterizedTest

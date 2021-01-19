@@ -46,6 +46,10 @@ subprojects {
         }
     }
 
+    lombok {
+        config['lombok.builder.className'] = 'Builder'
+    }
+
     rootProject.check.dependsOn test
 }
 

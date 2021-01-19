@@ -1,5 +1,8 @@
 package com.columnzero.gstruct;
 
+import com.columnzero.gstruct.lang.compile.DelegatingGroovyParser;
+import groovy.util.DelegatingScript;
+import lombok.NonNull;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.tomlj.Toml;
 import org.tomlj.TomlArray;
@@ -55,17 +58,19 @@ public class ExampleSources {
     }
 
     /**
-     * Walks all source files in the examples directory that end in ".gsml"
+     * Walks all source files in the examples directory with the given file extension.
+     *
+     * @param extension Filename extension to filter on (e.g. ".gsml")
      *
      * @return A stream of files.
      *
      * @throws IOException If there is error while walking the file tree.
      */
-    public static Stream<File> walkExamples() throws IOException {
+    public static Stream<File> walkExamples(String extension) throws IOException {
         return Files.walk(ExampleSources.getExamplesDir())
                     .map(Path::toFile)
                     .filter(File::isFile)
-                    .filter(f -> f.getName().endsWith(".gsml"));
+                    .filter(f -> f.getName().endsWith(extension));
     }
 
     /**
@@ -149,6 +154,11 @@ public class ExampleSources {
             this.toml = Toml.parse(text);
         }
 
+        /**
+         * Defined by the key {@code expect.names}.
+         *
+         * @return a set of expected names
+         */
         public Set<String> getExpectedNames() {
             final TomlArray names = toml.getArray("expect.names");
 
@@ -160,6 +170,18 @@ public class ExampleSources {
                         .stream()
                         .map(String.class::cast)
                         .collect(Collectors.toSet());
+        }
+
+        /**
+         * Executes a script defined by key {@code expect.script.groovy} and returns the result.
+         *
+         * @return the groovy script result
+         */
+        public Object getExpectedFromGroovyScript() {
+            @NonNull
+            String source = toml.getString("expect.script.groovy");
+            DelegatingScript script = new DelegatingGroovyParser().parse(source);
+            return script.run();
         }
     }
 }
