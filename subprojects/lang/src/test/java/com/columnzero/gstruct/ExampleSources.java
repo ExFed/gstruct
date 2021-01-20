@@ -1,9 +1,12 @@
 package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.lang.compile.DelegatingGroovyParser;
-import groovy.util.DelegatingScript;
-import lombok.NonNull;
+import io.vavr.collection.Stream;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
+import org.tinylog.Logger;
 import org.tomlj.Toml;
 import org.tomlj.TomlArray;
 import org.tomlj.TomlParseResult;
@@ -17,11 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -67,75 +68,76 @@ public class ExampleSources {
      * @throws IOException If there is error while walking the file tree.
      */
     public static Stream<File> walkExamples(String extension) throws IOException {
-        return Files.walk(ExampleSources.getExamplesDir())
-                    .map(Path::toFile)
-                    .filter(File::isFile)
-                    .filter(f -> f.getName().endsWith(extension));
+        return Stream.ofAll(Files.walk(ExampleSources.getExamplesDir()))
+                     .map(Path::toFile)
+                     .filter(File::isFile)
+                     .filter(f -> f.getName().endsWith(extension));
     }
 
     /**
-     * Gets a YAML-formatted example header if it exists.
+     * Gets a header if it exists on the given file.
      *
      * @param exampleFile File to scan for a header.
      *
-     * @return A YAML mapping, if it exists.
-     *
-     * @throws FileNotFoundException If the file does not exist.
+     * @return a header, if the file exists and has a header
      */
-    public static Optional<Header> getHeader(File exampleFile) throws FileNotFoundException {
-        final Scanner scanner = new Scanner(exampleFile);
+    public static Option<Header> getHeader(File exampleFile) {
+        try (Scanner scanner = new Scanner(exampleFile)) {
+            final String headerText;
+            if (!scanner.hasNextLine()) {
+                // doesn't have any text...
+                return Option.none();
+            }
 
-        if (!scanner.hasNextLine()) {
-            // doesn't have any text...
-            return Optional.empty();
+            // detect block vs line comments
+            final String firstLine = scanner.nextLine().stripLeading();
+            switch (firstLine) {
+                case "/*+++":
+                    // block comment style
+                    headerText = readBlockStyleHeader(scanner);
+                    break;
+                case "//+++":
+                    // line comment style
+                    headerText = readLineStyleHeader(scanner);
+                    break;
+                default:
+                    // incorrect format, ignore
+                    return Option.none();
+            }
+
+            return Option.some(new Header(stripIndent(headerText)));
+        } catch (FileNotFoundException e) {
+            Logger.error(e);
+            return Option.none();
         }
-
-        // detect block vs line comments
-        final String firstLine = scanner.nextLine().stripLeading();
-        final String headerText;
-        switch (firstLine) {
-            case "/*+++":
-                // block comment style
-                headerText = getBlockStyleHeader(scanner);
-                break;
-            case "//+++":
-                // line comment style
-                headerText = getLineStyleHeader(scanner);
-                break;
-            default:
-                // incorrect format, ignore
-                return Optional.empty();
-        }
-
-        return Optional.of(new Header(stripIndent(headerText)));
     }
 
-    private static String getBlockStyleHeader(Scanner scanner) {
-        final Stream.Builder<String> lines = Stream.builder();
+    private static String readBlockStyleHeader(Scanner scanner) {
+        Stream<String> lines = Stream.of();
         while (scanner.hasNextLine()) {
             final String line = scanner.nextLine();
             // look for an end-of-comment
             final int blockEnd = line.indexOf("*/");
             if (blockEnd >= 0) {
                 // include chars preceding the end-of-comment
-                lines.add(line.substring(0, blockEnd));
+                lines = lines.append(line.substring(0, blockEnd));
                 break;
             }
-            lines.add(line);
+            lines = lines.append(line);
         }
-        return lines.build().collect(Collectors.joining("\n"));
+        return lines.collect(Collectors.joining("\n"));
     }
 
-    private static String getLineStyleHeader(Scanner scanner) {
-        final Stream.Builder<String> lines = Stream.builder();
+    private static String readLineStyleHeader(Scanner scanner) {
+        Stream<String> lines = Stream.of();
         while (scanner.hasNextLine()) {
             final String line = scanner.nextLine();
             if (!line.startsWith(LINE_COMMENT)) {
                 break;
             }
-            lines.add(line.substring(LINE_COMMENT.length()));
+            lines = lines.append(line.substring(LINE_COMMENT.length()));
         }
-        return lines.build().collect(Collectors.joining("\n"));
+        return lines.collect(Collectors.joining("\n"));
     }
 
     private static String stripIndent(String str) {
@@ -175,13 +177,14 @@ public class ExampleSources {
         /**
          * Executes a script defined by key {@code expect.script.groovy} and returns the result.
          *
-         * @return the groovy script result
+         * @return if a script block is defined, either the thrown or returned value
          */
-        public Object getExpectedFromGroovyScript() {
-            @NonNull
-            String source = toml.getString("expect.script.groovy");
-            DelegatingScript script = new DelegatingGroovyParser().parse(source);
-            return script.run();
+        public Option<Either<Throwable, Object>> getExpectedFromGroovyScript() {
+            var parser = new DelegatingGroovyParser();
+            return Option.of(toml.getString("expect.script.groovy"))
+                         .map(parser::parse)
+                         .map(script -> Try.of(script::run))
+                         .map(Try::toEither);
         }
     }
 }

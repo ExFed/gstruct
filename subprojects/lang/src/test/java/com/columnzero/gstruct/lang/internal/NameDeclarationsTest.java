@@ -2,15 +2,14 @@ package com.columnzero.gstruct.lang.internal;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.lang.Parser;
+import io.vavr.collection.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.columnzero.gstruct.lang.Parser.withSource;
 import static com.google.common.truth.Truth.assertThat;
@@ -77,12 +76,13 @@ class NameDeclarationsTest {
 
         final Parser<File> parser = withSource(file);
         final NameDeclarations decls = parser.run(new NameDeclarations());
-        final Optional<Set<String>> expectation =
+        final Set<String> expectation =
                 ExampleSources.getHeader(parser.getSource())
-                              .map(ExampleSources.Header::getExpectedNames);
+                              .map(ExampleSources.Header::getExpectedNames)
+                              .getOrElse(Set::of);
 
         assertWithMessage("Example file is missing expectations")
-                .that(expectation.isPresent()).isTrue();
-        assertThat(decls.$names()).containsExactlyElementsIn(expectation.get());
+                .that(expectation).isNotEmpty();
+        assertThat(decls.$names()).containsExactlyElementsIn(expectation);
     }
 }
