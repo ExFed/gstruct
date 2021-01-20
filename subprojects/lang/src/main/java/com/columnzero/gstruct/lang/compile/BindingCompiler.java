@@ -93,33 +93,44 @@ public class BindingCompiler {
     }
 
     private static NameBindings doCompile(Function<Flexi, Runnable> firstActionDelegator) {
-        CompilerState state = new CompilerState();
-        Runnable firstAction = firstActionDelegator.apply(state.getScope());
-        Queue<Runnable> actions = state.getActions();
+        State compileState = new State(BindingCompiler::getDefaultKeywords);
+        Runnable firstAction = firstActionDelegator.apply(compileState.getScope());
+        Queue<Runnable> actions = compileState.getActions();
 
         actions.offer(firstAction); // get the traversal started
         while (!actions.isEmpty()) {
             actions.poll().run(); // traverse each syntax node
         }
 
-        return state.getModel();
+        return compileState.getModel();
+    }
+
+    private static Map<String, Closure<?>> getDefaultKeywords(State state) {
+        var scope = state.getScope();
+        var bindings = state.getModel().getBindings();
+        return Map.of(
+                "bind", asClosure(scope, binder(bindings)),
+                "extern", asClosure(scope, externCons()),
+                "tuple", asClosure(scope, tupleCons(state)),
+                "struct", asClosure(scope, structCons(state))
+        );
     }
 
     private static Function<String, Extern> externCons() {
-        return (String name) -> {
+        return name -> {
             Logger.debug(() -> "initializing extern(" + name + ")");
             return extern(name);
         };
     }
 
     @SuppressWarnings("unchecked")
-    private static Function<Closure<?>, Tuple> tupleCons(Queue<Runnable> actions, NameBindings model) {
+    private static Function<Closure<?>, Tuple> tupleCons(State state) {
         return cl -> {
             Logger.debug("initializing tuple");
             var tuple = new Tuple();
             Runnable task = () -> {
                 Logger.debug("configuring tuple");
-                Flexi scope = new Flexi(model.getRefs(), true);
+                Flexi scope = new Flexi(state.getModel().getRefs(), true);
                 Closure<List<Type>> typesAssigner = asListClosure(scope, (List<Type> t) -> {
                     tuple.getTypes().addAll(t);
                     return tuple.getTypes();
@@ -127,46 +138,39 @@ public class BindingCompiler {
                 scope.getProperties().put("types", typesAssigner);
                 with(scope, cl);
             };
-            actions.offer(task);
+            state.getActions().offer(task);
             return tuple;
         };
     }
 
     @SuppressWarnings("unchecked")
-    private static Function<Closure<?>, Struct> structCons(Queue<Runnable> actions, NameBindings model) {
+    private static Function<Closure<?>, Struct> structCons(State state) {
         return cl -> {
             Logger.debug("initializing struct");
             var struct = new Struct();
             Runnable task = () -> {
                 Logger.debug("configuring struct");
-                Flexi scope = new Flexi(model.getRefs(), true);
+                Flexi scope = new Flexi(state.getModel().getRefs(), true);
                 Closure<Void> fieldAssigner = asClosure(scope, binder(struct.getFields()));
                 scope.getProperties().put("field", fieldAssigner);
                 with(scope, cl);
             };
-            actions.offer(task);
+            state.getActions().offer(task);
             return struct;
         };
     }
 
     @Value
-    private static class CompilerState {
+    private static class State {
         NameBindings model = new NameBindings();
         Queue<Runnable> actions = new LinkedList<>();
-
         Flexi scope = new Flexi(false);
 
         @SuppressWarnings("unchecked")
-        public CompilerState() {
+        public State(Function<State, Map<String, Closure<?>>> keywordMapper) {
             // set up keywords
-            scope.getProperties().putAll(Map.of(
-                    "bind", asClosure(scope, binder(model.getBindings())),
-                    "extern", asClosure(scope, externCons()),
-                    "tuple", asClosure(scope, tupleCons(actions, model)),
-                    "struct", asClosure(scope, structCons(actions, model))
-            ));
+            scope.getProperties().putAll(keywordMapper.apply(this));
         }
-
     }
 
     @AllArgsConstructor
