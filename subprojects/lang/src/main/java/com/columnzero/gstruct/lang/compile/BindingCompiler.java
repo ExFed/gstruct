@@ -7,13 +7,14 @@ import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
-import groovy.util.Expando;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.tinylog.Logger;
@@ -21,6 +22,7 @@ import org.tinylog.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,7 @@ public class BindingCompiler {
         });
     }
 
-    private static NameBindings doCompile(Function<Flexi, Runnable> firstActionDelegator) {
+    private static NameBindings doCompile(Function<Scope, Runnable> firstActionDelegator) {
         State compileState = new State(BindingCompiler::getDefaultKeywords);
         Runnable firstAction = firstActionDelegator.apply(compileState.getScope());
         Queue<Runnable> actions = compileState.getActions();
@@ -123,19 +125,18 @@ public class BindingCompiler {
         };
     }
 
-    @SuppressWarnings("unchecked")
     private static Function<Closure<?>, Tuple> tupleCons(State state) {
         return cl -> {
             Logger.debug("initializing tuple");
             var tuple = new Tuple();
             Runnable task = () -> {
                 Logger.debug("configuring tuple");
-                Flexi scope = new Flexi(state.getModel().getRefs(), true);
+                Scope scope = Scope.inherit(state.getScope(), Scope.of(state.getModel().getRefs()));
                 Closure<List<Type>> typesAssigner = asListClosure(scope, (List<Type> t) -> {
                     tuple.getTypes().addAll(t);
                     return tuple.getTypes();
                 });
-                scope.getProperties().put("types", typesAssigner);
+                scope.getKeywords().put("types", typesAssigner);
                 with(scope, cl);
             };
             state.getActions().offer(task);
@@ -143,16 +144,15 @@ public class BindingCompiler {
         };
     }
 
-    @SuppressWarnings("unchecked")
     private static Function<Closure<?>, Struct> structCons(State state) {
         return cl -> {
             Logger.debug("initializing struct");
             var struct = new Struct();
             Runnable task = () -> {
                 Logger.debug("configuring struct");
-                Flexi scope = new Flexi(state.getModel().getRefs(), true);
+                Scope scope = Scope.inherit(state.getScope(), Scope.of(state.getModel().getRefs()));
                 Closure<Void> fieldAssigner = asClosure(scope, binder(struct.getFields()));
-                scope.getProperties().put("field", fieldAssigner);
+                scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
             };
             state.getActions().offer(task);
@@ -164,35 +164,43 @@ public class BindingCompiler {
     private static class State {
         NameBindings model = new NameBindings();
         Queue<Runnable> actions = new LinkedList<>();
-        Flexi scope = new Flexi(false);
+        Scope scope = new Scope();
 
-        @SuppressWarnings("unchecked")
         public State(Function<State, Map<String, Closure<?>>> keywordMapper) {
             // set up keywords
-            scope.getProperties().putAll(keywordMapper.apply(this));
+            scope.getKeywords().putAll(keywordMapper.apply(this));
         }
     }
 
     @AllArgsConstructor
-    private static class Flexi extends Expando {
+    private static class Scope extends GroovyObjectSupport {
 
-        private final boolean useSuper;
+        @SuppressWarnings("unchecked")
+        public static Scope of(Map<String, ?> properties) {
+            return new Scope((Map<String, Object>) properties);
+        }
 
-        public Flexi(Map<?, ?> propertyMap, boolean useSuper) {
-            super(propertyMap);
-            this.useSuper = useSuper;
+        public static Scope inherit(Scope... scopes) {
+            Map<String, Object> properties = new HashMap<>();
+            for (Scope scope : scopes) {
+                properties.putAll(scope.getKeywords());
+            }
+            return new Scope(properties);
+        }
+
+        @Getter
+        private final @NonNull Map<String, Object> keywords;
+
+        public Scope() {
+            this(new HashMap<>());
         }
 
         @Override
         public Object getProperty(String property) {
-            var properties = super.getProperties();
-            if (!properties.containsKey(property)) {
-                if (useSuper) {
-                    return super.getProperty(property);
-                }
+            if (!keywords.containsKey(property)) {
                 throw new MissingPropertyException("property not found: " + property);
             }
-            return properties.get(property);
+            return keywords.get(property);
         }
 
         @Override
@@ -208,14 +216,10 @@ public class BindingCompiler {
                 closure.setDelegate(this);
                 return closure.call((Object[]) args);
             } else {
-                if (useSuper) {
-                    return super.invokeMethod(name, args);
-                } else {
-                    Object[] argArray = args instanceof Object[]
-                            ? (Object[]) args
-                            : new Object[]{args};
-                    throw new MissingMethodException(name, Flexi.class, argArray);
-                }
+                Object[] argArray = args instanceof Object[]
+                        ? (Object[]) args
+                        : new Object[]{args};
+                throw new MissingMethodException(name, Scope.class, argArray);
             }
         }
     }

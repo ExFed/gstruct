@@ -3,4 +3,6 @@
 script.groovy = "throw new MissingPropertyException('')"
  */
 
-nonexistent.property
+tuple {
+    missing property
+}
