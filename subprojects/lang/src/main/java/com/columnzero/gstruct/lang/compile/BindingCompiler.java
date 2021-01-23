@@ -21,7 +21,6 @@ import org.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +30,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
+import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
 
 public class BindingCompiler {
@@ -63,25 +64,6 @@ public class BindingCompiler {
             Logger.debug(() -> "binding " + mapping);
             bindings.putAll(mapping);
             return null;
-        };
-    }
-
-    private static <T, R> Closure<R> asClosure(Object owner, Function<T, R> function) {
-        return new Closure<R>(owner) {
-            @SuppressWarnings("unused")
-            public R doCall(T arg) {
-                return function.apply(arg);
-            }
-        };
-    }
-
-    private static <T, R> Closure<R> asListClosure(Object owner, Function<List<T>, R> function) {
-        return new Closure<R>(owner) {
-            @SuppressWarnings({"unused", "unchecked"})
-            public final R doCall(Object... args) {
-                List<T> argList = Arrays.stream(args).map(a -> (T) a).collect(Collectors.toList());
-                return function.apply(argList);
-            }
         };
     }
 

@@ -2,12 +2,14 @@ package com.columnzero.gstruct.lang.compile;
 
 import groovy.lang.GroovyShell;
 import groovy.util.DelegatingScript;
+import lombok.Value;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.io.File;
 import java.io.IOException;
 
+@Value
 public class DelegatingGroovyParser {
 
     private static GroovyShell setupDelegatingShell() {
@@ -16,7 +18,7 @@ public class DelegatingGroovyParser {
         return new GroovyShell(config);
     }
 
-    private final GroovyShell shell = setupDelegatingShell();
+    GroovyShell shell = setupDelegatingShell();
 
     public DelegatingScript parse(File file) throws CompilationFailedException, IOException {
         return (DelegatingScript) shell.parse(file);
