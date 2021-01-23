@@ -1,10 +1,12 @@
 package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.lang.compile.DelegatingGroovyParser;
+import groovy.lang.Closure;
+import groovy.util.DelegatingScript;
 import io.vavr.collection.Stream;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
-import io.vavr.control.Try;
+import lombok.Value;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.tinylog.Logger;
 import org.tomlj.Toml;
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -105,7 +108,8 @@ public class ExampleSources {
                     return Option.none();
             }
 
-            return Option.some(new Header(stripIndent(headerText)));
+            final TomlParseResult tomlHeader = Toml.parse(stripIndent(headerText));
+            return Option.some(new Header(exampleFile, tomlHeader));
         } catch (FileNotFoundException e) {
             Logger.error(e);
             return Option.none();
@@ -148,13 +152,11 @@ public class ExampleSources {
      * Represents a TOML-formatted example file header containing test metadata, such as
      * expectations, etc.
      */
+    @Value
     public static class Header {
 
-        private final TomlParseResult toml;
-
-        private Header(String text) {
-            this.toml = Toml.parse(text);
-        }
+        File sourceFile;
+        TomlParseResult toml;
 
         /**
          * Defined by the key {@code expect.names}.
@@ -179,12 +181,42 @@ public class ExampleSources {
          *
          * @return if a script block is defined, either the thrown or returned value
          */
-        public Option<Either<Throwable, Object>> getExpectedFromGroovyScript() {
+        public Option<Either<Class<? extends Throwable>, Object>> getExpectedFromGroovyScript()
+                throws IOException {
             var parser = new DelegatingGroovyParser();
-            return Option.of(toml.getString("expect.script.groovy"))
-                         .map(parser::parse)
-                         .map(script -> Try.of(script::run))
-                         .map(Try::toEither);
+            var sourceDir = sourceFile.getParentFile();
+            var scriptFileOpt =
+                    Option.of(toml.getString("expect.script.groovy.file"))
+                          .map(filename -> new File(sourceDir, filename));
+
+            DelegatingScript script;
+            if (scriptFileOpt.isEmpty()) {
+                var scriptSrcOpt =
+                        Option.of(toml.getString("expect.script.groovy.source"));
+                if (scriptSrcOpt.isEmpty()) {
+                    return Option.none();
+                }
+                script = parser.parse(scriptSrcOpt.get());
+            } else {
+                script = parser.parse(scriptFileOpt.get());
+            }
+
+
+            var errorClosure = new Closure<Void>(parser.getShell()) {
+                Class<? extends Throwable> clazz = null;
+
+                @SuppressWarnings("unused")
+                public void doCall(Class<? extends Throwable> exceptionClass) {
+                    clazz = exceptionClass;
+                }
+            };
+
+            script.getBinding().setVariable("error", errorClosure);
+
+            var result = script.run();
+            return Option.some(null != errorClosure.clazz
+                                       ? Either.left(errorClosure.clazz)
+                                       : Either.right(result));
         }
     }
 }

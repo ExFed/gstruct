@@ -1,6 +1,6 @@
 /*+++
 [expect]
-script.groovy = "throw new UnsupportedOperationException()"
+script.groovy.source = "error UnsupportedOperationException"
  */
 
 struct {

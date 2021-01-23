@@ -1,6 +1,6 @@
 /*+++
 [expect]
-script.groovy = "throw new MissingPropertyException('')"
+script.groovy.source = "error MissingPropertyException"
  */
 
 tuple {

@@ -1,8 +1,6 @@
 /*+++
 [expect]
-script.groovy = """\
-    throw new com.columnzero.gstruct.lang.compile.BindingCompiler.BindingException()
-"""
+script.groovy.source = "error com.columnzero.gstruct.lang.compile.BindingCompiler.BindingException"
  */
 
 bind Real: extern('double')
