@@ -1,6 +1,6 @@
 /*+++
 [expect]
-script.groovy.file = "LatLon.expect.groovy"
+script.groovy.file = "latlon.expect.groovy"
  */
 
 println "### LatLon script: ${getClass()}"
