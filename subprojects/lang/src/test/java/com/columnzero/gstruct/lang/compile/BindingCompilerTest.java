@@ -21,7 +21,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class BindingCompilerTest {
 
     static Stream<File> examplesSource() throws IOException {
-        return Stream.ofAll(ExampleSources.walkExamples(".gs"));
+        return ExampleSources.walkExamples(".gs");
     }
 
     static Stream<Arguments> examplesWithExpectedSource() throws IOException {

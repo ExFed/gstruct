@@ -1,7 +1,16 @@
 /*+++
 [expect]
-script.groovy.file = "LatLon.groovy"
+script.groovy.file = "LatLon.expect.groovy"
  */
+
+println "### LatLon script: ${getClass()}"
+
+tuple {
+    println "### LatLon = ${LatLon}"
+    println "### this.LatLon = ${this.LatLon}"
+    println "### this = $this"
+    assert LatLon == this.LatLon
+}
 
 def tupleIntIntReal = tuple { types Int, Int, Real }
 

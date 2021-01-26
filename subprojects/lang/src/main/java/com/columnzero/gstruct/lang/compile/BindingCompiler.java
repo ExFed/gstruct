@@ -43,11 +43,11 @@ public class BindingCompiler {
     private static <T, U> void with(
             Object owner,
             @DelegatesTo.Target("delegate") U delegate,
-            @DelegatesTo(target = "delegate", strategy = Closure.DELEGATE_FIRST)
+            @DelegatesTo(target = "delegate", strategy = Closure.DELEGATE_ONLY)
             @ClosureParams(FirstParam.class) Closure<T> closure) {
 
         final Closure<T> clonedClosure = closure.rehydrate(delegate, owner, delegate);
-        clonedClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        clonedClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
         clonedClosure.call(delegate);
     }
 
@@ -163,11 +163,11 @@ public class BindingCompiler {
         }
 
         public static Scope inherit(Scope... scopes) {
-            Map<String, Object> properties = new HashMap<>();
+            Map<String, Object> keywords = new HashMap<>();
             for (Scope scope : scopes) {
-                properties.putAll(scope.getKeywords());
+                keywords.putAll(scope.getKeywords());
             }
-            return new Scope(properties);
+            return new Scope(keywords);
         }
 
         @Getter
@@ -194,15 +194,21 @@ public class BindingCompiler {
         public Object invokeMethod(String name, Object args) {
             var value = this.getProperty(name);
             if (value instanceof Closure) {
-                Closure<?> closure = (Closure<?>) ((Closure<?>) value).clone();
-                closure.setDelegate(this);
-                return closure.call((Object[]) args);
+                Closure<?> cl = (Closure<?>) value;
+                Closure<?> clonedClosure = cl.rehydrate(this, cl.getOwner(), this);
+                clonedClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
+                return clonedClosure.call((Object[]) args);
             } else {
                 Object[] argArray = args instanceof Object[]
                         ? (Object[]) args
                         : new Object[]{args};
                 throw new MissingMethodException(name, Scope.class, argArray);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "Scope(" + keywords + ')';
         }
     }
 
