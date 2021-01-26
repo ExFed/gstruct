@@ -12,12 +12,19 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
+
     - name: Setup JDK 11
       uses: actions/setup-java@v1
       with:
         java-version: 11
+
     - name: Build and merge JaCoCo report
       run: ./gradlew build jacocoRootReport
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1.6
+      if: always()
+
     - name: Publish coverage
       uses: codecov/codecov-action@v1
       with:
