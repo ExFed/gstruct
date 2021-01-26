@@ -24,6 +24,8 @@ jobs:
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1.6
       if: always()
+      with:
+        files: subprojects/*/build/test-results/**/*.xml
 
     - name: Publish coverage
       uses: codecov/codecov-action@v1
