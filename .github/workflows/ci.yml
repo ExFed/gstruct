@@ -25,6 +25,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v1.6
       if: always()
       with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         files: subprojects/*/build/test-results/**/*.xml
 
     - name: Publish coverage
