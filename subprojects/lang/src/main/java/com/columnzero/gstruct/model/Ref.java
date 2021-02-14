@@ -22,6 +22,7 @@ public interface Ref extends Type {
     String getName();
 
     Type getType();
+
     @Value
     class Eager implements Ref {
 

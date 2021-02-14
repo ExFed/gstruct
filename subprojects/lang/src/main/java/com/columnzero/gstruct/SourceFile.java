@@ -11,7 +11,7 @@ import java.io.File;
  * Represents a source file.
  */
 @Value(staticConstructor = "sourceFile")
-public class SourceFile {
+public class SourceFile implements Comparable<SourceFile> {
 
     @NonNull File file;
 
@@ -32,5 +32,10 @@ public class SourceFile {
      */
     public Path<String> getNamespace(File rootDir) {
         return Paths.from(this.file.getParentFile(), rootDir);
+    }
+
+    @Override
+    public int compareTo(SourceFile o) {
+        return this.getFile().compareTo(o.getFile());
     }
 }

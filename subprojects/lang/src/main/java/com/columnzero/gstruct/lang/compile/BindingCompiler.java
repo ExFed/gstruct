@@ -1,5 +1,6 @@
 package com.columnzero.gstruct.lang.compile;
 
+import com.columnzero.gstruct.SourceFile;
 import com.columnzero.gstruct.model.Extern;
 import com.columnzero.gstruct.model.NameBindings;
 import com.columnzero.gstruct.model.Struct;
@@ -35,6 +36,10 @@ import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
 
 public class BindingCompiler {
+
+    private BindingCompiler() {
+        throw new AssertionError("not instantiable");
+    }
 
     private static <T, U> void with(U delegate, Closure<T> closure) {
         with(closure.getOwner(), delegate, closure);
@@ -74,6 +79,10 @@ public class BindingCompiler {
             script.setDelegate(delegate);
             script.run();
         });
+    }
+
+    public static NameBindings compile(@NonNull SourceFile source) throws IOException {
+        return compile(source.getFile());
     }
 
     private static NameBindings doCompile(Function<Scope, Runnable> firstActionDelegator) {

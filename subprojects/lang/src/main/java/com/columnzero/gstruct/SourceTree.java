@@ -1,6 +1,7 @@
 package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.util.Path;
+import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -9,11 +10,9 @@ import lombok.Value;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * A collection of source files.
@@ -31,7 +30,7 @@ public class SourceTree {
      */
     @NonNull Root root;
 
-    @NonNull Collection<SourceFile> files;
+    @NonNull Stream<SourceFile> files;
 
     /**
      * The root of the source tree. Determines the namespace of declarations.
@@ -98,12 +97,11 @@ public class SourceTree {
          */
         public SourceTree select(Predicate<File> selector) throws IOException {
             final var sourceFiles =
-                    Files.walk(directory.toPath())
-                         .map(java.nio.file.Path::toFile)
-                         .filter(File::isFile)
-                         .filter(selector)
-                         .map(SourceFile::new)
-                         .collect(Collectors.toList());
+                    Stream.ofAll(Files.walk(directory.toPath()))
+                          .map(java.nio.file.Path::toFile)
+                          .filter(File::isFile)
+                          .filter(selector)
+                          .map(SourceFile::new);
             return new SourceTree(this, sourceFiles);
         }
     }
