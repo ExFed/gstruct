@@ -6,7 +6,6 @@ import io.vavr.collection.Stream;
 import io.vavr.collection.TreeMap;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -17,10 +16,9 @@ import static com.columnzero.gstruct.model.NameRef.named;
 
 @AllArgsConstructor
 @EqualsAndHashCode
-@Getter
 @RequiredArgsConstructor
 @ToString
-public class NominalModel {
+public final class NominalModel {
 
     public static NominalModel of(java.util.Map<String, Ref<Type>> map) {
         return new NominalModel(TreeMap.ofAll(map));
