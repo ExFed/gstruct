@@ -1,26 +1,31 @@
 package com.columnzero.gstruct.model;
 
+import io.vavr.collection.LinkedHashMap;
+import io.vavr.collection.Map;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor(staticName = "struct")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Value
 public class Struct implements Type {
 
-    @NonNull Map<String, Type> fields = new LinkedHashMap<>();
+    @lombok.Builder
+    public static Struct struct(@Singular java.util.Map<String, ? extends Ref<? extends Type>> fields) {
+        final var lhm = LinkedHashMap.ofAll(fields);
+        return new Struct(lhm.mapValues(Ref::narrow));
+    }
+
+    @Singular
+    @NonNull Map<String, Ref<Type>> fields;
 
     @Override
     public String toString() {
-        return fields.entrySet()
-                     .stream()
-                     .map(entry -> entry.getKey() + ":" + entry.getValue())
+        return fields.map(entry -> entry._1() + ":" + entry._2())
                      .collect(Collectors.joining(", ", "Struct(", ")"));
     }
 }

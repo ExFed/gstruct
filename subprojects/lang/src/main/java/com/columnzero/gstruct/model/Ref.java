@@ -1,114 +1,66 @@
 package com.columnzero.gstruct.model;
 
-import io.vavr.Lazy;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import io.vavr.Function0;
 import org.codehaus.groovy.util.HashCodeHelper;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public interface Ref extends Type {
-    static Ref eager(String name, Type type) {
-        return new Eager(name, type);
+public interface Ref<T> extends Function0<T> {
+
+    static <R> Ref<R> constRef(R value) {
+        return ref(() -> value);
     }
 
-    static Ref lazy(String name, Supplier<Type> typeSupplier) {
-        return new Supplied(name, Lazy.of(typeSupplier));
-    }
-
-    String getName();
-
-    Type getType();
-
-    @Value
-    class Eager implements Ref {
-
-        @NonNull String name;
-
-        @NonNull Type type;
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        @Override
-        public boolean equals(Object obj) {
-            return Util.equals(this, obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return Util.hashCode(this);
-        }
-    }
-
-    @Value
-    class Supplied implements Ref {
-
-        @NonNull String name;
-
-        @Getter(AccessLevel.PRIVATE)
-        @NonNull Supplier<Type> typeSupplier;
-
-        public Ref asEager() {
-            return eager(getName(), getType());
-        }
-
-        @Override
-        public Type getType() {
-            return typeSupplier.get();
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        @Override
-        public boolean equals(Object obj) {
-            return Util.equals(this, obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return Util.hashCode(this);
-        }
-    }
-
-    class Util {
-        private Util() {
-            throw new AssertionError("util class");
-        }
-
-        public static int hashCode(Ref ref) {
-            int hash;
-            hash = HashCodeHelper.initHash();
-            hash = HashCodeHelper.updateHash(hash, ref.getName());
-            hash = HashCodeHelper.updateHash(hash, ref.getType());
-            return hash;
-        }
-
-        public static boolean equals(Ref self, Object obj) {
-            if (self == obj) {
-                return true;
+    static <R> Ref<R> ref(Supplier<R> supplier) {
+        return new Ref<>() {
+            @Override
+            public R apply() {
+                return supplier.get();
             }
 
-            // implicit null check
-            if (!(obj instanceof Ref)) {
-                return false;
+            @Override
+            public int hashCode() {
+                int hash;
+                hash = HashCodeHelper.initHash();
+                hash = HashCodeHelper.updateHash(hash, this.get());
+                return hash;
             }
 
-            Ref other = (Ref) obj;
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) {
+                    return true;
+                }
 
-            return Objects.equals(self.getName(), other.getName())
-                    && Objects.equals(self.getType(), other.getType());
-        }
+                // implicit null check
+                if (!(obj instanceof Ref)) {
+                    return false;
+                }
+
+                Ref<?> other = (Ref<?>) obj;
+
+                return Objects.equals(this.get(), other.get());
+            }
+
+            @Override
+            public String toString() {
+                return "Ref{" + get().toString() + "}";
+            }
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    static <R> Ref<R> narrow(Ref<? extends R> ref) {
+        return (Ref<R>) ref;
+    }
+
+    static <R> Ref<R> eager(Ref<R> ref) {
+        return constRef(ref.get());
+    }
+
+    static <R> Ref<R> lazy(Ref<R> ref) {
+        // idempotent
+        return ref.isMemoized() ? ref : ref.memoized()::get;
     }
 }

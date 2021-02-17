@@ -44,11 +44,24 @@ public final class ClosureUtil {
 
     public static <T, R> Closure<R> asListClosure(Object owner, Function<List<T>, R> function) {
         return new Closure<R>(owner) {
-            @SuppressWarnings({"unused", "unchecked"})
+            @SuppressWarnings("unused")
             public final R doCall(Object... args) {
-                List<T> argList = Arrays.stream(args).map(a -> (T) a).collect(Collectors.toList());
-                return function.apply(argList);
+                return function.apply(asArgsList(args));
             }
         };
+    }
+
+    public static <T> Closure<Void> asListClosure(Object owner, Consumer<List<T>> fn) {
+        return new Closure<Void>(owner) {
+            @SuppressWarnings("unused")
+            public final void doCall(Object... args) {
+                fn.accept(asArgsList(args));
+            }
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> List<T> asArgsList(Object... args) {
+        return Arrays.stream(args).map(a -> (T) a).collect(Collectors.toList());
     }
 }

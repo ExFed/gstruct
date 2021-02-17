@@ -1,42 +1,47 @@
-import com.columnzero.gstruct.model.NameBindings
+import com.columnzero.gstruct.model.NominalModel
+import groovy.transform.CompileStatic
 
 import static com.columnzero.gstruct.model.Extern.extern
-import static com.columnzero.gstruct.model.Ref.eager
+import static com.columnzero.gstruct.model.NameRef.named
 import static com.columnzero.gstruct.model.Struct.struct
 import static com.columnzero.gstruct.model.Tuple.tuple
-import static java.util.Map.entry
-import static java.util.Map.ofEntries
 
-def typeInt = extern("int")
-def refInt = eager("Int", typeInt)
+@CompileStatic
+static NominalModel setup() {
+    def typeInt = extern "int"
+    def namedInt = named "Int", typeInt
 
-def typeReal = extern("float")
-def refReal = eager("Real", typeReal)
+    def typeReal = extern "float"
+    def namedReal = named "Real", typeReal
 
-def typeDecimalDeg = tuple(extern("double"))
-def refDecimalDeg = eager("DecimalDeg", typeDecimalDeg)
+    def typeDouble = extern "double"
+    def typeDecimalDeg = tuple typeDouble
+    def namedDecimalDeg = named "DecimalDeg", typeDecimalDeg
 
-def typeDegMinSec = tuple(refInt, refInt, refReal)
-def refDegMinSec = eager("DegMinSec", typeDegMinSec)
+    def typeDegMinSec = tuple namedInt, namedInt, namedReal
+    def namedDegMinSec = named "DegMinSec", typeDegMinSec
 
-def typeLatLon = struct(ofEntries(
-        entry("latitude", refDecimalDeg),
-        entry("longitude", refDegMinSec))
-)
-def refLatLon = eager("LatLon", typeLatLon)
+    def typeLatLon = struct([
+            latitude : namedDecimalDeg,
+            longitude: namedDegMinSec
+    ])
+    def namedLatLon = named "LatLon", typeLatLon
 
-def bindings = [
-        DecimalDeg: typeDecimalDeg,
-        DegMinSec : typeDegMinSec,
-        GeoVolume : struct(
-                northEast: refLatLon,
-                southWest: refLatLon,
-                height   : refReal),
-        Int       : typeInt,
-        LatLon    : typeLatLon,
-        Real      : typeReal
-]
+    def typeGeoVolume = struct([
+            northEast: namedLatLon,
+            southWest: namedLatLon,
+            height   : namedReal
+    ])
+    def namedGeoVolume = named "GeoVolume", typeGeoVolume
 
-def expect = new NameBindings()
-expect.bindings << bindings
-return expect
+    return NominalModel.of([
+            namedLatLon,
+            namedGeoVolume,
+            namedDegMinSec,
+            namedDecimalDeg,
+            namedInt,
+            namedReal
+    ] as Iterable)
+}
+
+return setup()

@@ -1,30 +1,36 @@
 package com.columnzero.gstruct.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.vavr.collection.List;
+import io.vavr.collection.Stream;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 public class Tuple implements Type {
 
-    public static Tuple tuple(Type... types) {
-        return new Tuple(Arrays.asList(types));
+    @lombok.Builder
+    public static Tuple tuple(@Singular Iterable<Ref<Type>> types) {
+        return new Tuple(List.ofAll(types));
     }
 
-    @NonNull List<Type> types = new ArrayList<>();
+    public static Tuple tuple(Type... types) {
+        return new Tuple(List.of(types).map(Ref::constRef));
+    }
+
+    @SafeVarargs
+    public static Tuple tuple(Ref<? extends Type>... refs) {
+        final Stream<Ref<Type>> narrowed = Stream.of(refs).map(Ref::narrow);
+        return new Tuple(narrowed.toList());
+    }
+
+    @NonNull List<Ref<Type>> types;
 
     @Override
     public String toString() {
-        return types.stream()
-                    .map(Object::toString)
+        return types.map(Object::toString)
                     .collect(Collectors.joining(", ", "Tuple(", ")")) + ")";
     }
 }

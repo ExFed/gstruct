@@ -1,6 +1,6 @@
 /*+++
 [expect]
-script.groovy.source = "error com.columnzero.gstruct.lang.compile.BindingCompiler.BindingException"
+script.groovy.source = "error com.columnzero.gstruct.model.NominalModel.BindingException"
  */
 
 bind Real: extern('double')

@@ -2,7 +2,8 @@ package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.SourceFile;
 import com.columnzero.gstruct.model.Extern;
-import com.columnzero.gstruct.model.NameBindings;
+import com.columnzero.gstruct.model.NominalModel;
+import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
 import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
@@ -27,17 +28,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
+import static com.columnzero.gstruct.model.Ref.constRef;
+import static com.columnzero.gstruct.model.Ref.ref;
 
-public class BindingCompiler {
+public class NominalCompiler {
 
-    private BindingCompiler() {
+    private NominalCompiler() {
         throw new AssertionError("not instantiable");
     }
 
@@ -56,23 +59,11 @@ public class BindingCompiler {
         clonedClosure.call(delegate);
     }
 
-    private static Function<Map<String, Type>, Void> binder(final Map<String, Type> bindings) {
-        return mapping -> {
-            Set<String> duplicates = mapping.keySet()
-                                            .stream()
-                                            .filter(bindings::containsKey)
-                                            .collect(Collectors.toSet());
-            if (!duplicates.isEmpty()) {
-                throw new BindingException("cannot bind duplicate name: " + duplicates);
-            }
-
-            Logger.debug(() -> "binding " + mapping);
-            bindings.putAll(mapping);
-            return null;
-        };
+    private static Consumer<Map<String, Ref<Type>>> binder(BiConsumer<String, Ref<Type>> bindFunc) {
+        return mapping -> mapping.forEach(bindFunc);
     }
 
-    public static NameBindings compile(@NonNull File source) throws IOException {
+    public static NominalModel compile(@NonNull File source) throws IOException {
         DelegatingScript script = new DelegatingGroovyParser().parse(source);
 
         return doCompile(delegate -> () -> {
@@ -81,12 +72,12 @@ public class BindingCompiler {
         });
     }
 
-    public static NameBindings compile(@NonNull SourceFile source) throws IOException {
+    public static NominalModel compile(@NonNull SourceFile source) throws IOException {
         return compile(source.getFile());
     }
 
-    private static NameBindings doCompile(Function<Scope, Runnable> firstActionDelegator) {
-        State compileState = new State(BindingCompiler::getDefaultKeywords);
+    private static NominalModel doCompile(Function<Scope, Runnable> firstActionDelegator) {
+        State compileState = new State(NominalCompiler::getDefaultKeywords);
         Runnable firstAction = firstActionDelegator.apply(compileState.getScope());
         Queue<Runnable> actions = compileState.getActions();
 
@@ -100,60 +91,60 @@ public class BindingCompiler {
 
     private static Map<String, Closure<?>> getDefaultKeywords(State state) {
         var scope = state.getScope();
-        var bindings = state.getModel().getBindings();
+        var model = state.getModel();
         return Map.of(
-                "bind", asClosure(scope, binder(bindings)),
+                "bind", asClosure(scope, binder(model::bind)),
                 "extern", asClosure(scope, externCons()),
                 "tuple", asClosure(scope, tupleCons(state)),
                 "struct", asClosure(scope, structCons(state))
         );
     }
 
-    private static Function<String, Extern> externCons() {
+    private static Function<String, Ref<Extern>> externCons() {
         return name -> {
             Logger.debug(() -> "initializing extern(" + name + ")");
-            return extern(name);
+            return constRef(extern(name));
         };
     }
 
-    private static Function<Closure<?>, Tuple> tupleCons(State state) {
+    private static Function<Closure<?>, Ref<Tuple>> tupleCons(State state) {
         return cl -> {
             Logger.debug("initializing tuple");
-            var tuple = new Tuple();
+            var tupleBuilder = Tuple.builder();
             Runnable task = () -> {
                 Logger.debug("configuring tuple");
-                Scope scope = Scope.inherit(state.getScope(), Scope.of(state.getModel().getRefs()));
-                Closure<List<Type>> typesAssigner = asListClosure(scope, (List<Type> t) -> {
-                    tuple.getTypes().addAll(t);
-                    return tuple.getTypes();
-                });
+                Scope scope = Scope.inherit(state.getScope(),
+                                            Scope.of(state.getModel().getNamedRefs()));
+                Closure<Void> typesAssigner =
+                        asListClosure(scope, (List<Ref<Type>> t) -> t.forEach(tupleBuilder::type));
                 scope.getKeywords().put("types", typesAssigner);
                 with(scope, cl);
             };
             state.getActions().offer(task);
-            return tuple;
+            return ref(tupleBuilder::build);
         };
     }
 
-    private static Function<Closure<?>, Struct> structCons(State state) {
+    private static Function<Closure<?>, Ref<Struct>> structCons(State state) {
         return cl -> {
             Logger.debug("initializing struct");
-            var struct = new Struct();
+            var struct = Struct.builder();
             Runnable task = () -> {
                 Logger.debug("configuring struct");
-                Scope scope = Scope.inherit(state.getScope(), Scope.of(state.getModel().getRefs()));
-                Closure<Void> fieldAssigner = asClosure(scope, binder(struct.getFields()));
+                Scope scope = Scope.inherit(state.getScope(),
+                                            Scope.of(state.getModel().getNamedRefs()));
+                Closure<Void> fieldAssigner = asClosure(scope, binder(struct::field));
                 scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
             };
             state.getActions().offer(task);
-            return struct;
+            return ref(struct::build);
         };
     }
 
     @Value
     private static class State {
-        NameBindings model = new NameBindings();
+        NominalModel model = new NominalModel();
         Queue<Runnable> actions = new LinkedList<>();
         Scope scope = new Scope();
 
@@ -218,12 +209,6 @@ public class BindingCompiler {
         @Override
         public String toString() {
             return "Scope(" + keywords + ')';
-        }
-    }
-
-    public static class BindingException extends RuntimeException {
-        private BindingException(String message) {
-            super(message);
         }
     }
 }

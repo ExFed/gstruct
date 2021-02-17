@@ -2,7 +2,7 @@ package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.ExampleSources.Header;
-import com.columnzero.gstruct.model.NameBindings;
+import com.columnzero.gstruct.model.NominalModel;
 import io.vavr.collection.Stream;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
@@ -18,7 +18,7 @@ import static io.vavr.CheckedFunction1.liftTry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class BindingCompilerTest {
+class NominalCompilerTest {
 
     static Stream<File> examplesSource() throws IOException {
         return ExampleSources.walkExamples(".gs");
@@ -38,10 +38,10 @@ class BindingCompilerTest {
     void examples(File file, Either<Class<Throwable>, Object> expectEither) throws IOException {
         if (expectEither.isLeft()) {
             Class<Throwable> expect = expectEither.getLeft();
-            assertThrows(expect, () -> BindingCompiler.compile(file));
+            assertThrows(expect, () -> NominalCompiler.compile(file));
         } else {
             Object expect = expectEither.get();
-            NameBindings actual = BindingCompiler.compile(file);
+            NominalModel actual = NominalCompiler.compile(file);
             assertThat(actual).isEqualTo(expect);
         }
     }
