@@ -2,6 +2,7 @@ package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.SourceFile;
 import com.columnzero.gstruct.model.Extern;
+import com.columnzero.gstruct.model.NameRef;
 import com.columnzero.gstruct.model.NominalModel;
 import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
@@ -35,6 +36,8 @@ import java.util.function.Function;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
+import static com.columnzero.gstruct.model.Identifier.name;
+import static com.columnzero.gstruct.model.NameRef.named;
 import static com.columnzero.gstruct.model.Ref.constRef;
 import static com.columnzero.gstruct.model.Ref.ref;
 
@@ -61,6 +64,11 @@ public class NominalCompiler {
 
     private static Consumer<Map<String, Ref<Type>>> binder(BiConsumer<String, Ref<Type>> bindFunc) {
         return mapping -> mapping.forEach(bindFunc);
+    }
+
+    private static Consumer<Map<String, Ref<Type>>> binder(NominalModel model) {
+        // TODO: namespacing!
+        return binder((s, typeRef) -> model.bind(name(s), typeRef));
     }
 
     public static NominalModel compile(@NonNull File source) throws IOException {
@@ -93,7 +101,7 @@ public class NominalCompiler {
         var scope = state.getScope();
         var model = state.getModel();
         return Map.of(
-                "bind", asClosure(scope, binder(model::bind)),
+                "bind", asClosure(scope, binder(model)),
                 "extern", asClosure(scope, externCons()),
                 "tuple", asClosure(scope, tupleCons(state)),
                 "struct", asClosure(scope, structCons(state))
@@ -113,8 +121,9 @@ public class NominalCompiler {
             var tupleBuilder = Tuple.builder();
             Runnable task = () -> {
                 Logger.debug("configuring tuple");
+                final var namedRefs = getNamedRefs(state);
                 Scope scope = Scope.inherit(state.getScope(),
-                                            Scope.of(state.getModel().getNamedRefs()));
+                                            Scope.of(namedRefs));
                 Closure<Void> typesAssigner =
                         asListClosure(scope, (List<Ref<Type>> t) -> t.forEach(tupleBuilder::type));
                 scope.getKeywords().put("types", typesAssigner);
@@ -132,7 +141,7 @@ public class NominalCompiler {
             Runnable task = () -> {
                 Logger.debug("configuring struct");
                 Scope scope = Scope.inherit(state.getScope(),
-                                            Scope.of(state.getModel().getNamedRefs()));
+                                            Scope.of(getNamedRefs(state)));
                 Closure<Void> fieldAssigner = asClosure(scope, binder(struct::field));
                 scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
@@ -140,6 +149,14 @@ public class NominalCompiler {
             state.getActions().offer(task);
             return ref(struct::build);
         };
+    }
+
+    private static Map<String, NameRef<Type>> getNamedRefs(State state) {
+        return state.getModel()
+                    .getBindings()
+                    .map((k, v) -> io.vavr.Tuple.of(k, named(k, v)))
+                    .mapKeys(name -> name.getPath().getValue().getId())
+                    .toJavaMap();
     }
 
     @Value

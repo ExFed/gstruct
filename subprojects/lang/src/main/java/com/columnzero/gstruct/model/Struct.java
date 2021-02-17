@@ -1,5 +1,7 @@
 package com.columnzero.gstruct.model;
 
+import com.columnzero.gstruct.model.Identifier.Local;
+import io.vavr.Tuple;
 import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.Map;
 import lombok.AccessLevel;
@@ -10,18 +12,22 @@ import lombok.Value;
 
 import java.util.stream.Collectors;
 
+import static com.columnzero.gstruct.model.Identifier.local;
+import static com.columnzero.gstruct.model.Ref.narrow;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
 public class Struct implements Type {
 
     @lombok.Builder
     public static Struct struct(@Singular java.util.Map<String, ? extends Ref<? extends Type>> fields) {
-        final var lhm = LinkedHashMap.ofAll(fields);
-        return new Struct(lhm.mapValues(Ref::narrow));
+        final Map<Local, Ref<Type>> locals =
+                LinkedHashMap.ofAll(fields).map((k, v) -> Tuple.of(local(k), narrow(v)));
+        return new Struct(locals);
     }
 
     @Singular
-    @NonNull Map<String, Ref<Type>> fields;
+    @NonNull Map<Local, Ref<Type>> fields;
 
     @Override
     public String toString() {
