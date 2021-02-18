@@ -2,6 +2,7 @@ package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.SourceFile;
 import com.columnzero.gstruct.model.Extern;
+import com.columnzero.gstruct.model.Identifier.Name;
 import com.columnzero.gstruct.model.NameRef;
 import com.columnzero.gstruct.model.NominalModel;
 import com.columnzero.gstruct.model.Ref;
@@ -10,22 +11,15 @@ import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -36,6 +30,7 @@ import java.util.function.Function;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
+import static com.columnzero.gstruct.model.Identifier.local;
 import static com.columnzero.gstruct.model.Identifier.name;
 import static com.columnzero.gstruct.model.Ref.constRef;
 import static com.columnzero.gstruct.model.Ref.ref;
@@ -65,26 +60,33 @@ public class NominalCompiler {
         return mapping -> mapping.forEach(bindFunc);
     }
 
-    private static Consumer<Map<String, Ref<Type>>> binder(NominalModel model) {
-        // TODO: namespacing!
-        return binder((s, typeRef) -> model.bind(name(s), typeRef));
+    private static Consumer<Map<String, Ref<Type>>> binder(State state) {
+        var namespace = state.getNamespace();
+        var model = state.getModel();
+        return binder((s, typeRef) -> model.bind(namespace.child(local(s)), typeRef));
     }
 
-    public static NominalModel compile(@NonNull File source) throws IOException {
+    @lombok.Builder(builderMethodName = "configure", buildMethodName = "compile", builderClassName = "Config")
+    public static NominalModel compile(@NonNull Name namespace, @NonNull File source) throws IOException {
         DelegatingScript script = new DelegatingGroovyParser().parse(source);
 
-        return doCompile(delegate -> () -> {
+        return doCompile(namespace, delegate -> () -> {
             script.setDelegate(delegate);
             script.run();
         });
     }
 
     public static NominalModel compile(@NonNull SourceFile source) throws IOException {
-        return compile(source.getFile());
+        return compile(name(), source.getFile());
     }
 
-    private static NominalModel doCompile(Function<Scope, Runnable> firstActionDelegator) {
-        State compileState = new State(NominalCompiler::getDefaultKeywords);
+    private static NominalModel doCompile(Name namespace,
+                                          Function<Scope, Runnable> firstActionDelegator) {
+        State compileState = State.builder()
+                                  .keywordsInjector(NominalCompiler::getDefaultKeywords)
+                                  .namespace(namespace)
+                                  .build();
+
         Runnable firstAction = firstActionDelegator.apply(compileState.getScope());
         Queue<Runnable> actions = compileState.getActions();
 
@@ -98,9 +100,8 @@ public class NominalCompiler {
 
     private static Map<String, Closure<?>> getDefaultKeywords(State state) {
         var scope = state.getScope();
-        var model = state.getModel();
         return Map.of(
-                "bind", asClosure(scope, binder(model)),
+                "bind", asClosure(scope, binder(state)),
                 "extern", asClosure(scope, externCons()),
                 "tuple", asClosure(scope, tupleCons(state)),
                 "struct", asClosure(scope, structCons(state))
@@ -158,73 +159,4 @@ public class NominalCompiler {
                     .toJavaMap();
     }
 
-    @Value
-    private static class State {
-        NominalModel model = new NominalModel();
-        Queue<Runnable> actions = new LinkedList<>();
-        Scope scope = new Scope();
-
-        public State(Function<State, Map<String, Closure<?>>> keywordMapper) {
-            // set up keywords
-            scope.getKeywords().putAll(keywordMapper.apply(this));
-        }
-    }
-
-    @AllArgsConstructor
-    private static class Scope extends GroovyObjectSupport {
-
-        @SuppressWarnings("unchecked")
-        public static Scope of(Map<String, ?> properties) {
-            return new Scope((Map<String, Object>) properties);
-        }
-
-        public static Scope inherit(Scope... scopes) {
-            Map<String, Object> keywords = new HashMap<>();
-            for (Scope scope : scopes) {
-                keywords.putAll(scope.getKeywords());
-            }
-            return new Scope(keywords);
-        }
-
-        @Getter
-        private final @NonNull Map<String, Object> keywords;
-
-        public Scope() {
-            this(new HashMap<>());
-        }
-
-        @Override
-        public Object getProperty(String property) {
-            if (!keywords.containsKey(property)) {
-                throw new MissingPropertyException("property not found: " + property);
-            }
-            return keywords.get(property);
-        }
-
-        @Override
-        public void setProperty(String property, Object newValue) {
-            throw new UnsupportedOperationException("cannot assign readonly property: " + property);
-        }
-
-        @Override
-        public Object invokeMethod(String name, Object args) {
-            var value = this.getProperty(name);
-            if (value instanceof Closure) {
-                Closure<?> cl = (Closure<?>) value;
-                Closure<?> clonedClosure = cl.rehydrate(this, cl.getOwner(), this);
-                clonedClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
-                return clonedClosure.call((Object[]) args);
-            } else {
-                Object[] argArray = args instanceof Object[]
-                        ? (Object[]) args
-                        : new Object[]{args};
-                throw new MissingMethodException(name, Scope.class, argArray);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "Scope(" + keywords + ')';
-        }
-    }
 }

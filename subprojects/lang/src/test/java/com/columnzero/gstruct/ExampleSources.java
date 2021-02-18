@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,19 +61,22 @@ public class ExampleSources {
     }
 
     /**
-     * Walks all source files in the examples directory with the given file extension.
+     * Walks all source files in the examples directory with the given file suffix.
      *
-     * @param extension Filename extension to filter on (e.g. ".gsml")
+     * @param suffix Filename suffix to filter on (e.g. ".gs")
      *
      * @return A stream of files.
-     *
-     * @throws IOException If there is error while walking the file tree.
      */
-    public static Stream<File> walkExamples(String extension) throws IOException {
-        return Stream.ofAll(Files.walk(ExampleSources.getExamplesDir()))
-                     .map(Path::toFile)
-                     .filter(File::isFile)
-                     .filter(f -> f.getName().endsWith(extension));
+    public static Stream<File> walkExamples(String suffix) {
+        final var dir = ExampleSources.getExamplesDir();
+        try {
+            return Stream.ofAll(Files.walk(dir))
+                         .map(Path::toFile)
+                         .filter(File::isFile)
+                         .filter(f -> f.getName().endsWith(suffix));
+        } catch (IOException e) {
+            throw new Error("Could not get examples with suffix '" + suffix + "' in " + dir, e);
+        }
     }
 
     /**
@@ -181,8 +183,7 @@ public class ExampleSources {
          *
          * @return if a script block is defined, either the thrown or returned value
          */
-        public Option<Either<Class<? extends Throwable>, Object>> getExpectedFromGroovyScript()
-                throws IOException {
+        public Option<Either<Class<? extends Throwable>, Object>> getExpectedFromGroovyScript() {
             var parser = new DelegatingGroovyParser();
             var sourceDir = sourceFile.getParentFile();
             var scriptFileOpt =
@@ -198,9 +199,13 @@ public class ExampleSources {
                 }
                 script = parser.parse(scriptSrcOpt.get());
             } else {
-                script = parser.parse(scriptFileOpt.get());
+                final var scriptFile = scriptFileOpt.get();
+                try {
+                    script = parser.parse(scriptFile);
+                } catch (IOException e) {
+                    throw new Error("Could not get result from script (" + scriptFile + ")", e);
+                }
             }
-
 
             var errorClosure = new Closure<Void>(parser.getShell()) {
                 Class<? extends Throwable> clazz = null;

@@ -2,6 +2,8 @@ package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.ExampleSources;
 import com.columnzero.gstruct.ExampleSources.Header;
+import com.columnzero.gstruct.SourceFile;
+import com.columnzero.gstruct.model.Identifier;
 import com.columnzero.gstruct.model.NominalModel;
 import io.vavr.collection.Stream;
 import io.vavr.control.Either;
@@ -20,11 +22,11 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class NominalCompilerTest {
 
-    static Stream<File> examplesSource() throws IOException {
+    static Stream<File> examplesSource() {
         return ExampleSources.walkExamples(".gs");
     }
 
-    static Stream<Arguments> examplesWithExpectedSource() throws IOException {
+    static Stream<Arguments> examplesWithExpectedSource() {
         return examplesSource().flatMap(
                 file -> ExampleSources.getHeader(file)
                                       .map(liftTry(Header::getExpectedFromGroovyScript))
@@ -38,10 +40,10 @@ class NominalCompilerTest {
     void examples(File file, Either<Class<Throwable>, Object> expectEither) throws IOException {
         if (expectEither.isLeft()) {
             Class<Throwable> expect = expectEither.getLeft();
-            assertThrows(expect, () -> NominalCompiler.compile(file));
+            assertThrows(expect, () -> NominalCompiler.compile(Identifier.name(), file));
         } else {
             Object expect = expectEither.get();
-            NominalModel actual = NominalCompiler.compile(file);
+            NominalModel actual = NominalCompiler.compile(SourceFile.sourceFile(file));
             assertThat(actual).isEqualTo(expect);
         }
     }

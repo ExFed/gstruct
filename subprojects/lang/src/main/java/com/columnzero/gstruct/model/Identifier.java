@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.model;
 
-import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.Comparators;
+import com.columnzero.gstruct.util.Path;
 import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,11 @@ public interface Identifier {
     }
 
     static Name name(String... path) {
-        final var locals = Stream.of(path).map(Identifier::local);
+        return name(Stream.of(path));
+    }
+
+    static Name name(Iterable<String> path) {
+        final var locals = Stream.ofAll(path).map(Identifier::local);
         return new Name(Path.of(locals));
     }
 
@@ -46,6 +50,10 @@ public interface Identifier {
         @Override
         public String toString() {
             return Stream.ofAll(path).map(Local::getId).collect(Collectors.joining("/"));
+        }
+
+        public Name child(Local local) {
+            return new Name(path.child(local));
         }
     }
 }
