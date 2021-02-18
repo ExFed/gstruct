@@ -17,10 +17,6 @@ import lombok.ToString;
 @ToString
 public final class NominalModel {
 
-    public static NominalModel of(java.util.Map<Name, Ref<Type>> map) {
-        return new NominalModel(TreeMap.ofAll(map));
-    }
-
     public static NominalModel of(Iterable<NameRef<Type>> nameRefs) {
         final var model = new NominalModel();
         Stream.ofAll(nameRefs).forEach(nr -> model.bind(nr.getName(), Ref.constRef(nr.get())));
