@@ -1,4 +1,4 @@
-package com.columnzero.gstruct.model;
+package com.columnzero.gstruct.util;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,7 +10,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class UtilTest {
+class ComparatorsTest {
 
     private static Stream<Arguments> lexicalCompareSource() {
         return Stream.of(
@@ -24,7 +24,7 @@ class UtilTest {
     @ParameterizedTest
     @MethodSource("lexicalCompareSource")
     void lexicalCompare(int expect, Iterable<String> it1, Iterable<String> it2) {
-        int actual = Util.lexicalCompare(it1, it2);
+        int actual = Comparators.lexicographic(it1, it2);
         assertThat(actual).isEqualTo(expect);
     }
 }

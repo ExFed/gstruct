@@ -40,18 +40,6 @@ public class FQName implements Comparable<FQName> {
     public int compareTo(FQName that) {
         final var these = Stream.concat(this.getNamespace(), Stream.of(this.getName()));
         final var those = Stream.concat(that.getNamespace(), Stream.of(that.getName()));
-        return compareIter(these, those);
-    }
-
-    private <E extends Comparable<E>> int compareIter(Iterable<E> a, Iterable<E> b) {
-        final var aIt = a.iterator();
-        final var bIt = b.iterator();
-        while (aIt.hasNext() && bIt.hasNext()) {
-            final var comparison = aIt.next().compareTo(bIt.next());
-            if (0 != comparison) {
-                return comparison;
-            }
-        }
-        return aIt.hasNext() ? 1 : bIt.hasNext() ? -1 : 0;
+        return Comparators.lexicographic(these, those);
     }
 }

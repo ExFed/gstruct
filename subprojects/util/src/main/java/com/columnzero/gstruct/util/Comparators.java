@@ -1,16 +1,21 @@
-package com.columnzero.gstruct.model;
+package com.columnzero.gstruct.util;
 
-final class Util {
+public final class Comparators {
+
+    private Comparators() {
+        throw new AssertionError("utility");
+    }
+
     /**
      * Lexicographically compares two iterables. See {@link java.util.Comparator}
      *
      * @param i1  First sequence.
      * @param i2  Second sequence.
-     * @param <E> Type of elements contained within the iterables.
+     * @param <T> Type of elements contained within the iterables.
      *
      * @return -1 if {@code i1} is greater, +1 if {@code i2} is greater, or 0 if they are equal
      */
-    public static <E extends Comparable<E>> int lexicalCompare(Iterable<E> i1, Iterable<E> i2) {
+    public static <T extends Comparable<T>> int lexicographic(Iterable<T> i1, Iterable<T> i2) {
         var it1 = i1.iterator();
         var it2 = i2.iterator();
 

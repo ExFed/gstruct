@@ -1,6 +1,7 @@
 package com.columnzero.gstruct.model;
 
 import com.columnzero.gstruct.util.Path;
+import com.columnzero.gstruct.util.Comparators;
 import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,7 +40,7 @@ public interface Identifier {
 
         @Override
         public int compareTo(Name that) {
-            return Util.lexicalCompare(this.path, that.path);
+            return Comparators.lexicographic(this.path, that.path);
         }
 
         @Override
