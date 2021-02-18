@@ -1,7 +1,13 @@
 package com.columnzero.gstruct;
 
+import com.columnzero.gstruct.util.Comparators;
 import com.columnzero.gstruct.util.Path;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.collection.LinkedHashMultimap;
+import io.vavr.collection.Multimap;
 import io.vavr.collection.Stream;
+import io.vavr.collection.TreeMultimap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -22,6 +28,10 @@ import java.util.function.Predicate;
 public class SourceTree {
 
     public static SourceTree.Root root(File rootDirectory) {
+        return root(rootDirectory.toPath());
+    }
+
+    public static SourceTree.Root root(java.nio.file.Path rootDirectory) {
         return new Root(rootDirectory);
     }
 
@@ -38,23 +48,38 @@ public class SourceTree {
      * @return A directory.
      */
     public File getRootDirectory() {
-        return root.directory;
+        return root.directory.toFile();
     }
 
     /**
      * Gets the namespaces formed by the source tree.
-     *
-     * @return A namespace trie.
      */
     public Map<SourceFile, Path<String>> getNamespaces() {
 
+        final File rootDir = getRootDirectory();
         final Map<SourceFile, Path<String>> namespaces = new LinkedHashMap<>();
         for (SourceFile source : getFiles()) {
-            final File rootDir = getRootDirectory();
             final var namespace = source.getNamespace(rootDir);
             namespaces.put(source, namespace);
         }
         return namespaces;
+    }
+
+    private static <K extends Comparable<?>, V> Multimap<V, K> invert(java.util.Map<K, V> map) {
+        final var kvEntries = map.entrySet().stream().map(Tuple::fromEntry);
+        return LinkedHashMultimap.withSortedSet().ofAll(kvEntries, Tuple2::swap);
+    }
+
+    public Multimap<Path<String>, SourceFile> mapByNamespace() {
+
+        var rootDir = getRootDirectory();
+        Multimap<Path<String>, SourceFile> map = TreeMultimap.withSeq()
+                                                             .empty(Comparators::lexicographic);
+        for (SourceFile source : getFiles()) {
+            var namespace = source.getNamespace(rootDir);
+            map = map.put(namespace, source);
+        }
+        return map;
     }
 
     /**
@@ -63,10 +88,10 @@ public class SourceTree {
     @Value
     public static class Root {
 
-        @NonNull File directory;
+        @NonNull java.nio.file.Path directory;
 
-        private Root(File directory) {
-            if (!directory.isDirectory()) {
+        private Root(java.nio.file.Path directory) {
+            if (!Files.isDirectory(directory)) {
                 throw new IllegalArgumentException("Root is not a directory.");
             }
             this.directory = directory;
@@ -97,7 +122,7 @@ public class SourceTree {
          */
         public SourceTree select(Predicate<File> selector) throws IOException {
             final var sourceFiles =
-                    Stream.ofAll(Files.walk(directory.toPath()))
+                    Stream.ofAll(Files.walk(directory))
                           .map(java.nio.file.Path::toFile)
                           .filter(File::isFile)
                           .filter(selector)

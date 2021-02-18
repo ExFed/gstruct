@@ -1,7 +1,9 @@
 package com.columnzero.gstruct.lang.compile;
 
 import com.columnzero.gstruct.SourceFile;
+import com.columnzero.gstruct.SourceTree;
 import com.columnzero.gstruct.model.Extern;
+import com.columnzero.gstruct.model.Identifier;
 import com.columnzero.gstruct.model.Identifier.Name;
 import com.columnzero.gstruct.model.NameRef;
 import com.columnzero.gstruct.model.NominalModel;
@@ -9,12 +11,15 @@ import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
 import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
+import com.columnzero.gstruct.util.Path;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
-import lombok.Builder;
+import io.vavr.CheckedFunction3;
+import io.vavr.Function3;
+import io.vavr.Tuple2;
 import lombok.NonNull;
 import org.tinylog.Logger;
 
@@ -31,7 +36,6 @@ import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
 import static com.columnzero.gstruct.model.Identifier.local;
-import static com.columnzero.gstruct.model.Identifier.name;
 import static com.columnzero.gstruct.model.Ref.constRef;
 import static com.columnzero.gstruct.model.Ref.ref;
 
@@ -66,28 +70,39 @@ public class NominalCompiler {
         return binder((s, typeRef) -> model.bind(namespace.child(local(s)), typeRef));
     }
 
-    @lombok.Builder(builderMethodName = "configure", buildMethodName = "compile", builderClassName = "Config")
-    public static NominalModel compile(@NonNull Name namespace, @NonNull File source) throws IOException {
+    public static NominalModel compile(@NonNull SourceTree tree) throws IOException {
+
+        var model = new NominalModel();
+        for (Tuple2<Path<String>, SourceFile> entry : tree.mapByNamespace()) {
+            doCompile(entry._2.getFile(), Identifier.name(entry._1), model);
+        }
+        return model;
+    }
+
+    @lombok.Builder(builderMethodName = "configure",
+                    buildMethodName = "compile",
+                    builderClassName = "Config")
+    public static NominalModel compile(@NonNull File source, @NonNull Name namespace)
+            throws IOException {
+
+        return doCompile(source, namespace, new NominalModel());
+    }
+
+    private static NominalModel doCompile(File source, Name namespace, NominalModel model)
+            throws IOException {
         DelegatingScript script = new DelegatingGroovyParser().parse(source);
 
-        return doCompile(namespace, delegate -> () -> {
-            script.setDelegate(delegate);
-            script.run();
-        });
-    }
-
-    public static NominalModel compile(@NonNull SourceFile source) throws IOException {
-        return compile(name(), source.getFile());
-    }
-
-    private static NominalModel doCompile(Name namespace,
-                                          Function<Scope, Runnable> firstActionDelegator) {
         State compileState = State.builder()
                                   .keywordsInjector(NominalCompiler::getDefaultKeywords)
                                   .namespace(namespace)
+                                  .model(model)
                                   .build();
 
-        Runnable firstAction = firstActionDelegator.apply(compileState.getScope());
+        Runnable firstAction = () -> {
+            script.setDelegate(compileState.getScope());
+            script.run();
+        };
+
         Queue<Runnable> actions = compileState.getActions();
 
         actions.offer(firstAction); // get the traversal started

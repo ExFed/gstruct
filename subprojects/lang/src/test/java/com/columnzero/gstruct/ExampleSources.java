@@ -44,7 +44,7 @@ public class ExampleSources {
      */
     public static Path getExamplesDir() {
         final ClassLoader classLoader = ExampleSources.class.getClassLoader();
-        final URL examplesUrl = requireNonNull(classLoader.getResource("exampleSrc"),
+        final URL examplesUrl = requireNonNull(classLoader.getResource("examples"),
                                                "Could not get resource");
         final Path dir;
         try {
@@ -76,6 +76,16 @@ public class ExampleSources {
                          .filter(f -> f.getName().endsWith(suffix));
         } catch (IOException e) {
             throw new Error("Could not get examples with suffix '" + suffix + "' in " + dir, e);
+        }
+    }
+
+    public static SourceTree getExamplesTree(String extension) {
+        final var dir = getExamplesDir();
+        try {
+            return SourceTree.root(dir).select(extension);
+        } catch (IOException e) {
+            throw new Error(
+                    "Could not get examples with extension '" + extension + "' in " + dir, e);
         }
     }
 
