@@ -23,14 +23,7 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
         return new Of<>(Ref.constRef(type));
     }
 
-    public static <T> NameRef<T> named(Name name, Ref<T> typeRef) {
-        return new NameRef<>(name, typeRef);
-    }
-
-    public static <T> NameRef<T> named(Name name, T type) {
-        return new NameRef<>(name, Ref.constRef(type));
-    }
-
+    @Getter
     @NonNull Name name;
 
     @NonNull Ref<T> typeRef;
@@ -68,11 +61,11 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
         @NonNull Ref<T> typeRef;
 
         public NameRef<T> named(Name name) {
-            return NameRef.named(name, typeRef);
+            return new NameRef<>(name, typeRef);
         }
 
         public NameRef<T> named(String... path) {
-            return NameRef.named(name(path), typeRef);
+            return new NameRef<>(name(path), typeRef);
         }
     }
 }

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.stream.Collectors;
+
 public interface Identifier {
 
     static Local local(String id) {
@@ -21,6 +23,7 @@ public interface Identifier {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Value
     class Local implements Identifier, Comparable<Local> {
+
         @NonNull String id;
 
         @Override
@@ -37,6 +40,11 @@ public interface Identifier {
         @Override
         public int compareTo(Name that) {
             return Util.lexicalCompare(this.path, that.path);
+        }
+
+        @Override
+        public String toString() {
+            return Stream.ofAll(path).map(Local::getId).collect(Collectors.joining("/"));
         }
     }
 }

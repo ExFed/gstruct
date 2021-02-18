@@ -37,7 +37,6 @@ import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
 import static com.columnzero.gstruct.model.Identifier.name;
-import static com.columnzero.gstruct.model.NameRef.named;
 import static com.columnzero.gstruct.model.Ref.constRef;
 import static com.columnzero.gstruct.model.Ref.ref;
 
@@ -154,7 +153,7 @@ public class NominalCompiler {
     private static Map<String, NameRef<Type>> getNamedRefs(State state) {
         return state.getModel()
                     .getBindings()
-                    .map((k, v) -> io.vavr.Tuple.of(k, named(k, v)))
+                    .map((k, v) -> io.vavr.Tuple.of(k, NameRef.of(v).named(k)))
                     .mapKeys(name -> name.getPath().getValue().getId())
                     .toJavaMap();
     }
