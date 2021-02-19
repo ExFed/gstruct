@@ -17,7 +17,7 @@ class DefaultRef<R> implements Ref<R> {
     @NonNull Supplier<R> supplier;
 
     @Override
-    public R apply() {
+    public R get() {
         return supplier.get();
     }
 
@@ -44,6 +44,6 @@ class DefaultRef<R> implements Ref<R> {
 
     @Override
     public String toString() {
-        return Ref.toString(this);
+        return "Ref->" + this.get().toString();
     }
 }

@@ -2,7 +2,6 @@ package com.columnzero.gstruct.model;
 
 import com.columnzero.gstruct.model.Identifier.Name;
 import io.vavr.Function1;
-import io.vavr.PartialFunction;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +33,7 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
     @NonNull Function1<Name, Ref<T>> refGetter;
 
     @Override
-    public T apply() {
+    public T get() {
         return getValue().get();
     }
 

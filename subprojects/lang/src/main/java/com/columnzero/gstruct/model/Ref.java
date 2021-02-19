@@ -1,11 +1,13 @@
 package com.columnzero.gstruct.model;
 
-import io.vavr.Function0;
+import io.vavr.Value;
+import io.vavr.collection.Iterator;
 
-import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Ref<T> extends Function0<T> {
+public interface Ref<T> extends Value<T> {
 
     static <R> Ref<R> constRef(R value) {
         return ref(() -> value);
@@ -28,33 +30,45 @@ public interface Ref<T> extends Function0<T> {
         return (Ref<R>) ref;
     }
 
-    static boolean equals(Ref<?> self, Object obj) {
-        if (self == obj) {
-            return true;
-        }
-
-        // implicit null check
-        if (!(obj instanceof Ref)) {
-            return false;
-        }
-
-        Ref<?> other = (Ref<?>) obj;
-
-        return Objects.equals(self.get(), other.get());
-    }
-
-    static int hashCode(Ref<?> self) {
-        return Objects.hashCode(self.get());
-    }
-
-    static String toString(Ref<?> self) {
-        return "Ref->" + self.get().toString();
+    @Override
+    default boolean isAsync() {
+        return false;
     }
 
     @Override
-    int hashCode();
+    default boolean isEmpty() {
+        return false;
+    }
 
     @Override
-    boolean equals(Object obj);
+    default boolean isLazy() {
+        return false;
+    }
+
+    @Override
+    default boolean isSingleValued() {
+        return true;
+    }
+
+    @Override
+    default <U> Value<U> map(Function<? super T, ? extends U> mapper) {
+        return ref(() -> mapper.apply(get()));
+    }
+
+    @Override
+    default Value<T> peek(Consumer<? super T> action) {
+        action.accept(get());
+        return this;
+    }
+
+    @Override
+    default String stringPrefix() {
+        return "Ref";
+    }
+
+    @Override
+    default Iterator<T> iterator() {
+        return Iterator.of(get());
+    }
 }
 
