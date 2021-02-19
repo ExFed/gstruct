@@ -23,7 +23,7 @@ class DefaultRef<R> implements Ref<R> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(supplier.get());
+        return 31 * Objects.hashCode(supplier.get());
     }
 
     @Override
@@ -33,17 +33,17 @@ class DefaultRef<R> implements Ref<R> {
         }
 
         // implicit null check
-        if (!(obj instanceof Ref)) {
+        if (!(obj instanceof DefaultRef)) {
             return false;
         }
 
-        Ref<?> other = (Ref<?>) obj;
+        DefaultRef<?> that = (DefaultRef<?>) obj;
 
-        return Objects.equals(this.get(), other.get());
+        return Objects.equals(this.get(), that.get());
     }
 
     @Override
     public String toString() {
-        return "Ref{" + get().toString() + "}";
+        return Ref.toString(this);
     }
 }

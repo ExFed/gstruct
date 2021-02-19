@@ -22,33 +22,39 @@ class NameRefTest {
     static final NameRef<String> FOO_BAR = NameRef.of(BAR).named("foo");
     static final NameRef<String> FOO_BAZ = NameRef.of(BAZ).named("foo");
     static final NameRef<String> BIZ_BAZ = NameRef.of(BAZ).named("biz");
-    static final String OTHER = "non ref";
+    static final String VALUE = "non ref";
 
     /**
      * Defined as:
      * <pre>
-     *          foobar  foobaz  bizbaz  other
-     *  foobar    ==      !=      !=      !=
-     *  foobaz    !=      ==      !=      !=
-     *  bizbaz    !=      !=      ==      !=
-     *  other     !=      !=      !=      ==
+     *           :bar    :baz   foo:bar foo:baz biz:baz value
+     *     :bar   ==      !=      !=      !=      !=      !=
+     *     :baz   !=      ==      !=      !=      !=      !=
+     *  foo:bar   !=      !=      ==      ==      !=      !=
+     *  foo:baz   !=      !=      ==      ==      !=      !=
+     *  biz:baz   !=      !=      !=      !=      ==      !=
+     *    value   !=      !=      !=      !=      !=      ==
      * </pre>
      */
     static final boolean[][] EQUALITY_MATRIX = {
-            {true, false, false, false},
-            {false, true, false, false},
-            {false, false, true, false},
-            {false, false, false, true}
+            {true, false, false, false, false, false,},
+            {false, true, false, false, false, false,},
+            {false, false, true, true, false, false,},
+            {false, false, true, true, false, false,},
+            {false, false, false, false, true, false,},
+            {false, false, false, false, false, true,}
     };
 
     /**
-     * Defined as: {@code [foobar, foobaz, bizbaz, foobar', foobaz', bizbaz']}
+     * Defined as: {@code [:bar, :baz, foo:bar, foo:baz, biz:baz, value]}
      */
     static final Object[] VECTOR = {
+            BAR,
+            BAZ,
             FOO_BAR,
             FOO_BAZ,
             BIZ_BAZ,
-            OTHER
+            VALUE
     };
 
     static Stream<Tuple3<Object, Object, Boolean>> getEqualityEdges() {
@@ -57,9 +63,9 @@ class NameRefTest {
             boolean[] equalityRow = EQUALITY_MATRIX[rowIdx];
             for (int colIdx = 0; colIdx < equalityRow.length; colIdx++) {
                 var isEqual = equalityRow[colIdx];
-                var a = VECTOR[rowIdx];
-                var b = VECTOR[colIdx];
-                triples.add(Tuple.of(a, b, isEqual));
+                var row = VECTOR[rowIdx];
+                var col = VECTOR[colIdx];
+                triples.add(Tuple.of(row, col, isEqual));
             }
         }
         return triples.build();
@@ -77,26 +83,26 @@ class NameRefTest {
 
     @ParameterizedTest
     @MethodSource("equalRefsSource")
-    void equalRefsAreEqual(Object a, Object b) {
-        assertThat(a.equals(b)).isTrue();
+    void equalRefsAreEqual(Object row, Object col) {
+        assertThat(row.equals(col)).isTrue();
     }
 
     @ParameterizedTest
     @MethodSource("nonEqualRefsSource")
-    void nonEqualRefsAreNotEqual(Object a, Object b) {
-        assertThat(a.equals(b)).isFalse();
+    void nonEqualRefsAreNotEqual(Object row, Object col) {
+        assertThat(row.equals(col)).isFalse();
     }
 
     @ParameterizedTest
     @MethodSource("equalRefsSource")
-    void equalRefsHaveSameHashCodes(Object a, Object b) {
-        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+    void equalRefsHaveSameHashCodes(Object row, Object col) {
+        assertThat(row.hashCode()).isEqualTo(col.hashCode());
     }
 
     @ParameterizedTest
     @MethodSource("nonEqualRefsSource")
-    void nonEqualRefsHaveDifferentHashCodes(Object a, Object b) {
-        assertThat(a.hashCode()).isNotEqualTo(b.hashCode());
+    void nonEqualRefsHaveDifferentHashCodes(Object row, Object col) {
+        assertThat(row.hashCode()).isNotEqualTo(col.hashCode());
     }
 
     @Test
@@ -106,7 +112,7 @@ class NameRefTest {
 
     @Test
     void getValue() {
-        assertThat(FOO_BAR.getValue()).isEqualTo(FOO_BAR.getTypeRef());
+        assertThat(FOO_BAR.getValue()).isEqualTo(FOO_BAR.getRefGetter().apply(FOO_BAR.getName()));
     }
 
     @Test

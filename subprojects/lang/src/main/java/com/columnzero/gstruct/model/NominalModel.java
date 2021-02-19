@@ -9,12 +9,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @EqualsAndHashCode
 @RequiredArgsConstructor
-@ToString
 public final class NominalModel {
 
     public static NominalModel of(Iterable<NameRef<Type>> nameRefs) {
@@ -31,6 +32,15 @@ public final class NominalModel {
             throw new BindingException("cannot bind duplicate name: " + name);
         }
         bindings = bindings.put(name, typeRef);
+    }
+
+    @Override
+    public String toString() {
+        final var bindingsString =
+                bindings.map(binding -> binding.apply((name, typeRef) -> name + ":" + typeRef))
+                        .map(Objects::toString)
+                        .collect(Collectors.joining(", "));
+        return "NominalModel(" + bindingsString + ")";
     }
 
     public static class BindingException extends RuntimeException {

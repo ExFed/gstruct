@@ -1,6 +1,8 @@
 package com.columnzero.gstruct.model;
 
 import com.columnzero.gstruct.model.Identifier.Name;
+import io.vavr.Function1;
+import io.vavr.PartialFunction;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,26 +18,29 @@ import static com.columnzero.gstruct.model.Identifier.name;
 public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
 
     public static <T> Of<T> of(Ref<T> ref) {
-        return new Of<>(ref);
+        return new Of<>(name -> ref);
     }
 
     public static <T> Of<T> of(T type) {
-        return new Of<>(Ref.constRef(type));
+        return new Of<>(name -> Ref.constRef(type));
     }
 
-    @Getter
+    public static <T> Of<T> of(Function1<Name, Ref<T>> refGetter) {
+        return new Of<>(refGetter);
+    }
+
     @NonNull Name name;
 
-    @NonNull Ref<T> typeRef;
+    @NonNull Function1<Name, Ref<T>> refGetter;
 
     @Override
     public T apply() {
-        return typeRef.get();
+        return getValue().get();
     }
 
     @Override
     public String toString() {
-        return "NameRef{" + name + ":" + typeRef.get() + "}";
+        return "NameRef->" + name;
     }
 
     @Override
@@ -45,7 +50,7 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
 
     @Override
     public Ref<T> getValue() {
-        return typeRef;
+        return refGetter.apply(name);
     }
 
     @Override
@@ -53,19 +58,36 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
         throw new UnsupportedOperationException("unmodifiable");
     }
 
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof NameRef)) {
+            return false;
+        }
+        final NameRef<?> that = (NameRef<?>) obj;
+        return this.name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return 59 + name.hashCode();
+    }
+
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter(AccessLevel.NONE)
     @Value
     public static class Of<T> {
 
-        @Getter(AccessLevel.PRIVATE)
-        @NonNull Ref<T> typeRef;
+        @NonNull Function1<Name, Ref<T>> refGetter;
 
         public NameRef<T> named(Name name) {
-            return new NameRef<>(name, typeRef);
+            return new NameRef<>(name, refGetter);
         }
 
         public NameRef<T> named(String... path) {
-            return new NameRef<>(name(path), typeRef);
+            return new NameRef<>(name(path), refGetter);
         }
     }
 }
