@@ -1,5 +1,6 @@
 package com.columnzero.gstruct.util;
 
+import lombok.Value;
 import org.junit.jupiter.api.function.Executable;
 
 import java.util.stream.Stream;
@@ -23,7 +24,8 @@ public class TestUtil {
             .add(() -> assertThat(b.equals(null)).isFalse());
 
         // type
-        exec.add(() -> assertThat(a1.equals(new Object() {})).isFalse());
+        exec.add(() -> assertThat(a1.equals(new Object() {
+        })).isFalse());
 
         // reflexive
         exec.add(() -> assertThat(a1.equals(a1)).isTrue());
@@ -52,5 +54,32 @@ public class TestUtil {
             .add(() -> assertThat(b.hashCode()).isNotEqualTo(a1Code));
 
         assertAll(exec.build());
+    }
+
+    public static Stream<EqualityEdge> asEqualityEdges(boolean[][] eqMatrix, Object[] testVector) {
+        for (boolean[] row : eqMatrix) {
+            assert row.length == eqMatrix.length : "matrix must be square";
+        }
+        assert eqMatrix.length == testVector.length
+                : "vector dimension must equal matrix dimension";
+
+        Stream.Builder<EqualityEdge> edges = Stream.builder();
+        for (int rowIdx = 0; rowIdx < eqMatrix.length; rowIdx++) {
+            boolean[] equalityRow = eqMatrix[rowIdx];
+            for (int colIdx = 0; colIdx < equalityRow.length; colIdx++) {
+                var isEqual = equalityRow[colIdx];
+                var row = testVector[rowIdx];
+                var col = testVector[colIdx];
+                edges.add(new EqualityEdge(row, col, isEqual));
+            }
+        }
+        return edges.build();
+    }
+
+    @Value
+    public static class EqualityEdge {
+        Object a;
+        Object b;
+        boolean equal;
     }
 }

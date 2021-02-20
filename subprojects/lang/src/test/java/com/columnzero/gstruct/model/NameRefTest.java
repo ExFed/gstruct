@@ -1,7 +1,7 @@
 package com.columnzero.gstruct.model;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple3;
+import com.columnzero.gstruct.util.TestUtil;
+import com.columnzero.gstruct.util.TestUtil.EqualityEdge;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -70,29 +70,18 @@ class NameRefTest {
             VALUE
     };
 
-    static Stream<Tuple3<Object, Object, Boolean>> getEqualityEdges() {
-
-        Stream.Builder<Tuple3<Object, Object, Boolean>> triples = Stream.builder();
-        for (int rowIdx = 0; rowIdx < EQUALITY_MATRIX.length; rowIdx++) {
-            boolean[] equalityRow = EQUALITY_MATRIX[rowIdx];
-            for (int colIdx = 0; colIdx < equalityRow.length; colIdx++) {
-                var isEqual = equalityRow[colIdx];
-                var row = VECTOR[rowIdx];
-                var col = VECTOR[colIdx];
-                triples.add(Tuple.of(row, col, isEqual));
-            }
-        }
-        return triples.build();
+    static Stream<EqualityEdge> getEqualityEdges() {
+        return TestUtil.asEqualityEdges(EQUALITY_MATRIX, VECTOR);
     }
 
     private static Stream<Arguments> equalRefsSource() {
-        return getEqualityEdges().filter(Tuple3::_3)
-                                 .map(triple -> arguments(triple._1, triple._2));
+        return getEqualityEdges().filter(EqualityEdge::isEqual)
+                                 .map(edge -> arguments(edge.getA(), edge.getB()));
     }
 
     private static Stream<Arguments> nonEqualRefsSource() {
-        return getEqualityEdges().filter(not(Tuple3::_3))
-                                 .map(triple -> arguments(triple._1, triple._2));
+        return getEqualityEdges().filter(not(EqualityEdge::isEqual))
+                                 .map(edge -> arguments(edge.getA(), edge.getB()));
     }
 
     @ParameterizedTest
