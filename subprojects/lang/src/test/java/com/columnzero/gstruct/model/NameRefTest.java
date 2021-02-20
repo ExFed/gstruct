@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static com.columnzero.gstruct.model.Extern.extern;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.function.Predicate.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,48 +17,61 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class NameRefTest {
 
-    static final Ref<String> BAR = Ref.constRef("bar");
-    static final Ref<String> BAZ = Ref.constRef("baz");
+    static final NominalModel model;
 
-    static final NameRef<String> FOO_BAR = NameRef.of(BAR).named("foo");
-    static final NameRef<String> FOO_BAZ = NameRef.of(BAZ).named("foo");
-    static final NameRef<String> BIZ_BAZ = NameRef.of(BAZ).named("biz");
+    static final Ref<Type> BAR;
+    static final Ref<Type> BAZ;
+
+    static final NameRef FOO_BAR;
+    static final NameRef BIZ_BAZ;
+    static final NameRef QUX_BAZ;
+
+    static {
+        model = new NominalModel();
+        BAR = Ref.constRef(extern("bar"));
+        BAZ = Ref.constRef(extern("baz"));
+        FOO_BAR = model.bind(BAR).to("foo");
+        BIZ_BAZ = model.bind(BAZ).to("biz");
+        QUX_BAZ = model.bind(BAZ).to("qux");
+    }
+
     static final String VALUE = "non ref";
 
     /**
      * Defined as:
      * <pre>
-     *           :bar    :baz   foo:bar foo:baz biz:baz value
+     *           :bar    :baz   foo:bar biz:baz qux:baz value
      *     :bar   ==      !=      !=      !=      !=      !=
      *     :baz   !=      ==      !=      !=      !=      !=
-     *  foo:bar   !=      !=      ==      ==      !=      !=
-     *  foo:baz   !=      !=      ==      ==      !=      !=
-     *  biz:baz   !=      !=      !=      !=      ==      !=
+     *  foo:bar   !=      !=      ==      !=      !=      !=
+     *  biz:baz   !=      !=      !=      ==      !=      !=
+     *  qux:baz   !=      !=      !=      !=      ==      !=
      *    value   !=      !=      !=      !=      !=      ==
      * </pre>
      */
     static final boolean[][] EQUALITY_MATRIX = {
             {true, false, false, false, false, false,},
             {false, true, false, false, false, false,},
-            {false, false, true, true, false, false,},
-            {false, false, true, true, false, false,},
+            {false, false, true, false, false, false,},
+            {false, false, false, true, false, false,},
             {false, false, false, false, true, false,},
             {false, false, false, false, false, true,}
     };
 
     /**
-     * Defined as: {@code [:bar, :baz, foo:bar, foo:baz, biz:baz, value]}
+     * Defined as: {@code [:bar, :baz, foo:bar, foo:baz, qux:baz, value]}
      */
     static final Object[] VECTOR = {
             BAR,
             BAZ,
             FOO_BAR,
-            FOO_BAZ,
             BIZ_BAZ,
+            QUX_BAZ,
             VALUE
     };
 
     static Stream<Tuple3<Object, Object, Boolean>> getEqualityEdges() {
+
         Stream.Builder<Tuple3<Object, Object, Boolean>> triples = Stream.builder();
         for (int rowIdx = 0; rowIdx < EQUALITY_MATRIX.length; rowIdx++) {
             boolean[] equalityRow = EQUALITY_MATRIX[rowIdx];
@@ -112,7 +126,7 @@ class NameRefTest {
 
     @Test
     void getValue() {
-        assertThat(FOO_BAR.getValue()).isEqualTo(FOO_BAR.getRefGetter().apply(FOO_BAR.getName()));
+        assertThat(FOO_BAR.getValue()).isEqualTo(FOO_BAR.getModel().ref(FOO_BAR.getName()));
     }
 
     @Test

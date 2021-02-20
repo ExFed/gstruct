@@ -1,6 +1,5 @@
 package examples.com.columnzero.gstruct
 
-import com.columnzero.gstruct.model.NameRef
 import com.columnzero.gstruct.model.NominalModel
 import groovy.transform.CompileStatic
 
@@ -8,15 +7,17 @@ import static com.columnzero.gstruct.model.Extern.extern
 import static com.columnzero.gstruct.model.Tuple.tuple
 
 @CompileStatic
-static NominalModel expect() {
+static NominalModel buildModel() {
+    def model = new NominalModel()
+
     def externThing = extern 'thing'
     def tupleThings = tuple externThing, externThing, externThing
-    def namedThings = NameRef.of tupleThings named 'com', 'columnzero', 'gstruct', 'Things'
+    model.bind tupleThings to 'com', 'columnzero', 'gstruct', 'Things'
 
-    def typeStuff = extern'stuff'
-    def namedStuff = NameRef.of typeStuff named 'com', 'columnzero', 'gstruct', 'Stuff'
+    def typeStuff = extern 'stuff'
+    model.bind typeStuff to 'com', 'columnzero', 'gstruct', 'Stuff'
 
-    return NominalModel.of([namedThings, namedStuff] as Iterable)
+    return model
 }
 
-return expect()
+return buildModel()

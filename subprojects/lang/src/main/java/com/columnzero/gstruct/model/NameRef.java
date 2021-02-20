@@ -1,39 +1,27 @@
 package com.columnzero.gstruct.model;
 
 import com.columnzero.gstruct.model.Identifier.Name;
-import io.vavr.Function1;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.util.Map;
 
-import static com.columnzero.gstruct.model.Identifier.name;
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
-public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
+public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparable<NameRef> {
 
-    public static <T> Of<T> of(Ref<T> ref) {
-        return new Of<>(name -> ref);
-    }
-
-    public static <T> Of<T> of(T type) {
-        return new Of<>(name -> Ref.constRef(type));
-    }
-
-    public static <T> Of<T> of(Function1<Name, Ref<T>> refGetter) {
-        return new Of<>(refGetter);
+    static NameRef of(Name name, NominalModel model) {
+        return new NameRef(name, model);
     }
 
     @NonNull Name name;
 
-    @NonNull Function1<Name, Ref<T>> refGetter;
+    @NonNull NominalModel model;
 
     @Override
-    public T get() {
+    public Type get() {
         return getValue().get();
     }
 
@@ -48,13 +36,18 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
     }
 
     @Override
-    public Ref<T> getValue() {
-        return refGetter.apply(name);
+    public Ref<Type> getValue() {
+        return model.ref(name);
     }
 
     @Override
-    public Ref<T> setValue(Ref<T> value) {
+    public Ref<Type> setValue(Ref<Type> value) {
         throw new UnsupportedOperationException("unmodifiable");
+    }
+
+    @Override
+    public int compareTo(NameRef that) {
+        return this.name.compareTo(that.name);
     }
 
     @Override
@@ -65,28 +58,14 @@ public class NameRef<T> implements Ref<T>, Map.Entry<Name, Ref<T>> {
         if (!(obj instanceof NameRef)) {
             return false;
         }
-        final NameRef<?> that = (NameRef<?>) obj;
+
+        // assume that, if the names are the same, then they refer to the same type structure
+        final NameRef that = (NameRef) obj;
         return this.name.equals(that.name);
     }
 
     @Override
     public int hashCode() {
         return 59 + name.hashCode();
-    }
-
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @Getter(AccessLevel.NONE)
-    @Value
-    public static class Of<T> {
-
-        @NonNull Function1<Name, Ref<T>> refGetter;
-
-        public NameRef<T> named(Name name) {
-            return new NameRef<>(name, refGetter);
-        }
-
-        public NameRef<T> named(String... path) {
-            return new NameRef<>(name(path), refGetter);
-        }
     }
 }

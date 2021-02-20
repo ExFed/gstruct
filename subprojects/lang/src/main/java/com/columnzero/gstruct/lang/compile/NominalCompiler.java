@@ -5,7 +5,6 @@ import com.columnzero.gstruct.SourceTree;
 import com.columnzero.gstruct.model.Extern;
 import com.columnzero.gstruct.model.Identifier;
 import com.columnzero.gstruct.model.Identifier.Name;
-import com.columnzero.gstruct.model.NameRef;
 import com.columnzero.gstruct.model.NominalModel;
 import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
@@ -17,8 +16,6 @@ import groovy.lang.DelegatesTo;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
-import io.vavr.CheckedFunction3;
-import io.vavr.Function3;
 import io.vavr.Tuple2;
 import lombok.NonNull;
 import org.tinylog.Logger;
@@ -136,7 +133,7 @@ public class NominalCompiler {
             var tupleBuilder = Tuple.builder();
             Runnable task = () -> {
                 Logger.debug("configuring tuple");
-                final var namedRefs = getNamedRefs(state);
+                final var namedRefs = refBindings(state);
                 Scope scope = Scope.inherit(state.getScope(),
                                             Scope.of(namedRefs));
                 Closure<Void> typesAssigner =
@@ -155,8 +152,7 @@ public class NominalCompiler {
             var struct = Struct.builder();
             Runnable task = () -> {
                 Logger.debug("configuring struct");
-                Scope scope = Scope.inherit(state.getScope(),
-                                            Scope.of(getNamedRefs(state)));
+                Scope scope = Scope.inherit(state.getScope(), Scope.of(refBindings(state)));
                 Closure<Void> fieldAssigner = asClosure(scope, binder(struct::field));
                 scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
@@ -166,12 +162,10 @@ public class NominalCompiler {
         };
     }
 
-    private static Map<String, NameRef<Type>> getNamedRefs(State state) {
+    private static Map<String, Ref<Type>> refBindings(State state) {
         return state.getModel()
-                    .getBindings()
-                    .map((k, v) -> io.vavr.Tuple.of(k, NameRef.of(v).named(k)))
-                    .mapKeys(name -> name.getPath().getValue().getId())
-                    .toJavaMap();
+                    .getNameRefs()
+                    .toJavaMap(nr -> io.vavr.Tuple.of(
+                            nr.getName().getPath().getValue().getId(), nr));
     }
-
 }
