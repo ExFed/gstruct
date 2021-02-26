@@ -3,7 +3,6 @@ package com.columnzero.gstruct.model;
 import com.columnzero.gstruct.model.Identifier.Name;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
-import io.vavr.collection.Stream;
 import io.vavr.collection.TreeMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,12 +22,6 @@ import static com.columnzero.gstruct.model.Identifier.name;
 @RequiredArgsConstructor
 public final class NominalModel {
 
-    public static NominalModel of(Iterable<NameRef> nameRefs) {
-        final var model = new NominalModel();
-        Stream.ofAll(nameRefs).forEach(nr -> model.bind(nr.getName(), Ref.constRef(nr.get())));
-        return model;
-    }
-
     @Getter
     private @NonNull Map<Name, Ref<Type>> bindings = TreeMap.empty();
 
@@ -42,10 +35,6 @@ public final class NominalModel {
 
     public Binder bind(Ref<? extends Type> type) {
         return new Binder(Ref.narrow(type));
-    }
-
-    public NameRef bind(Name name, Type type) {
-        return bind(name, Ref.constRef(type));
     }
 
     public NameRef bind(Name name, Ref<? extends Type> typeRef) {
