@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public interface Identifier {
@@ -39,7 +40,7 @@ public interface Identifier {
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Value
-    class Name implements Identifier, Comparable<Name> {
+    class Name implements Identifier, Comparable<Name>, Iterable<Local> {
         @NonNull Path<Local> path;
 
         @Override
@@ -54,6 +55,11 @@ public interface Identifier {
 
         public Name child(Local local) {
             return new Name(path.child(local));
+        }
+
+        @Override
+        public Iterator<Local> iterator() {
+            return path.iterator();
         }
     }
 }

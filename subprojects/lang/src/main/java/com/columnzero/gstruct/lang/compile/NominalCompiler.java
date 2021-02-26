@@ -87,6 +87,7 @@ public class NominalCompiler {
 
     private static NominalModel doCompile(File source, Name namespace, NominalModel model)
             throws IOException {
+
         DelegatingScript script = new DelegatingGroovyParser().parse(source);
 
         State compileState = State.builder()
@@ -149,16 +150,16 @@ public class NominalCompiler {
     private static Function<Closure<?>, Ref<Struct>> structCons(State state) {
         return cl -> {
             Logger.debug("initializing struct");
-            var struct = Struct.builder();
+            var structBuilder = Struct.builder();
             Runnable task = () -> {
                 Logger.debug("configuring struct");
                 Scope scope = Scope.inherit(state.getScope(), Scope.of(refBindings(state)));
-                Closure<Void> fieldAssigner = asClosure(scope, binder(struct::field));
+                Closure<Void> fieldAssigner = asClosure(scope, binder(structBuilder::field));
                 scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
             };
             state.getActions().offer(task);
-            return ref(struct::build);
+            return ref(structBuilder::build);
         };
     }
 

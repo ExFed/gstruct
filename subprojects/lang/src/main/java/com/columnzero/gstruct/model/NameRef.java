@@ -37,7 +37,9 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
 
     @Override
     public Ref<Type> getValue() {
-        return model.ref(name);
+        return model.getBindings()
+                    .get(name)
+                    .getOrElseThrow(() -> new BindingNotFoundException(name));
     }
 
     @Override
@@ -59,7 +61,7 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
             return false;
         }
 
-        // assume that, if the names are the same, then they refer to the same type structure
+        // assume that if the names are the same then they refer to the same type structure
         final NameRef that = (NameRef) obj;
         return this.name.equals(that.name);
     }
@@ -68,4 +70,5 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
     public int hashCode() {
         return 59 + name.hashCode();
     }
+
 }

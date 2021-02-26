@@ -10,7 +10,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -22,9 +21,15 @@ import static com.columnzero.gstruct.model.Identifier.name;
 @RequiredArgsConstructor
 public final class NominalModel {
 
+    /**
+     * Map of fully-qualified names bound to type references.
+     */
     @Getter
     private @NonNull Map<Name, Ref<Type>> bindings = TreeMap.empty();
 
+    /**
+     * @return a set of all {@linkplain NameRef NameRefs} accumulated by this model's bindings
+     */
     public Set<NameRef> getNameRefs() {
         return bindings.keySet().map(name -> NameRef.of(name, this));
     }
@@ -33,13 +38,21 @@ public final class NominalModel {
         return new Binder(Ref.constRef(type));
     }
 
-    public Binder bind(Ref<? extends Type> type) {
-        return new Binder(Ref.narrow(type));
+    public Binder bind(Ref<? extends Type> typeRef) {
+        return new Binder(Ref.narrow(typeRef));
     }
 
-    public NameRef bind(Name name, Ref<? extends Type> typeRef) {
+    /**
+     * Binds a name to a type reference.
+     *
+     * @param name    identifier of the type to bind
+     * @param typeRef reference to the type being bound
+     *
+     * @return the resulting {@link NameRef} representing the binding
+     */
+    public NameRef bind(@NonNull Name name, @NonNull Ref<? extends Type> typeRef) {
         if (bindings.containsKey(name)) {
-            throw new BindingException("cannot bind duplicate name: " + name);
+            throw new DuplicateBindingException("cannot bind duplicate name: " + name);
         }
         bindings = bindings.put(name, Ref.narrow(typeRef));
         return ref(name);
@@ -60,10 +73,9 @@ public final class NominalModel {
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter(AccessLevel.NONE)
-    @Value
-    public class Binder {
+    public final class Binder {
 
-        @NonNull Ref<Type> type;
+        private final @NonNull Ref<Type> type;
 
         public NameRef to(Name name) {
             return bind(name, type);
@@ -74,15 +86,4 @@ public final class NominalModel {
         }
     }
 
-    public static class BindingException extends RuntimeException {
-        private BindingException(String message) {
-            super(message);
-        }
-    }
-
-    public static class BindingNotFoundException extends RuntimeException {
-        private BindingNotFoundException(Name name) {
-            super("name not found: " + name);
-        }
-    }
 }

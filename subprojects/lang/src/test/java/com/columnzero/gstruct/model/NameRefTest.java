@@ -110,12 +110,12 @@ class NameRefTest {
 
     @Test
     void getKey() {
-        assertThat(FOO_BAR.getKey()).isEqualTo(FOO_BAR.getName());
+        assertThat((Object) FOO_BAR.getKey()).isEqualTo(FOO_BAR.getName());
     }
 
     @Test
     void getValue() {
-        assertThat(FOO_BAR.getValue()).isEqualTo(FOO_BAR.getModel().ref(FOO_BAR.getName()));
+        assertThat(FOO_BAR.getValue()).isEqualTo(BAR);
     }
 
     @Test
