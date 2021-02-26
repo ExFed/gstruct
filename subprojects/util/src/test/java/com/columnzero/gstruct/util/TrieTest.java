@@ -88,6 +88,30 @@ class TrieTest {
     }
 
     @Test
+    void putAllMap() {
+        final var expect = data.entrySet();
+
+        cut.putAll(data);
+
+        final var actual = cut.entrySet();
+
+        assertThat(actual).containsExactlyElementsIn(expect);
+    }
+
+    @Test
+    void putAllTrie() {
+        final var expect = data.entrySet();
+        final var trie = new Trie<Integer, String>();
+        trie.putAll(data);
+
+        cut.putAll(trie);
+
+        final var actual = cut.entrySet();
+
+        assertThat(actual).containsExactlyElementsIn(expect);
+    }
+
+    @Test
     void remove() {
         // remove from empty trie
         assertThat(cut.remove(Path.of(1))).isEqualTo(null);
@@ -119,7 +143,8 @@ class TrieTest {
         cut.putAll(data);
         final Set<Entry<Path<Integer>, String>> actual = cut.entrySet();
         final Set<Entry<Path<Integer>, String>> expect = data.entrySet();
-        assertThat(actual).isEqualTo(expect);
+
+        assertThat(actual).containsExactlyElementsIn(expect);
     }
 
     @Test
@@ -145,5 +170,19 @@ class TrieTest {
     @Test
     void errors() {
         assertThrows(NullPointerException.class, () -> cut.put(null, ""));
+    }
+
+    @Test
+    void string() {
+        cut.putAll(data);
+
+        final var actual = cut.toString();
+
+        final Stream.Builder<Executable> exec = Stream.builder();
+        for (Entry<Path<Integer>, String> entry : data.entrySet()) {
+            exec.add(() -> assertThat(actual).contains(entry.getKey().toString()))
+                .add(() -> assertThat(actual).contains(entry.getValue()));
+        }
+        assertAll(exec.build());
     }
 }

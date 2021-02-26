@@ -2,17 +2,13 @@ package com.columnzero.gstruct.util;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * An associative prefix tree of generic token strings.
@@ -217,32 +213,18 @@ public class Trie<T, V> {
     /**
      * A set of entries.
      */
-    private final class NodeEntrySet extends AbstractSet<Entry<Path<T>, V>> {
+    private final class NodeEntrySet {
         private final Set<Entry<Path<T>, V>> inner = new LinkedHashSet<>();
-
-        @Override
-        public Iterator<Entry<Path<T>, V>> iterator() {
-            return inner.iterator();
-        }
-
-        @Override
-        public int size() {
-            return inner.size();
-        }
     }
 
     /**
      * An entry within the entry set.
      */
-    private final class NodeEntry implements Entry<Path<T>, V> {
+    @Value
+    private class NodeEntry implements Entry<Path<T>, V> {
 
-        private final Path<T> key;
-        private final Node node;
-
-        private NodeEntry(Path<T> key, Node node) {
-            this.key = requireNonNull(key);
-            this.node = requireNonNull(node);
-        }
+        @NonNull Path<T> key;
+        @NonNull Node node;
 
         @Override
         public Path<T> getKey() {
@@ -270,11 +252,6 @@ public class Trie<T, V> {
                         getValue().equals(other.getValue());
             }
             return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, node);
         }
 
         @Override
