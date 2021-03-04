@@ -1,5 +1,6 @@
 package com.columnzero.gstruct.util;
 
+import io.vavr.control.Option;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -132,5 +133,65 @@ class PathTest {
         final Path<String> ccc = Path.of("ccc".split(""));
 
         assertEqualsAndHashCode(abc1, abc2, xyz, xyzabc, ccc);
+    }
+
+    @Test
+    void foldLeft() {
+        cut = Path.of(ABC);
+
+        final var expect = "!abc";
+        final var actual = cut.foldLeft("!", (s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
+    }
+
+    @Test
+    void foldRight() {
+        cut = Path.of(ABC);
+
+        final var expect = "abc!";
+        final var actual = cut.foldRight("!", (s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
+    }
+
+    @Test
+    void reduceLeft() {
+        cut = Path.of(ABC);
+
+        final var expect = "abc";
+        final var actual = cut.reduceLeft((s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
+    }
+
+    @Test
+    void reduceLeftOption() {
+        cut = Path.of(ABC);
+
+        final var expect = Option.of("abc");
+        final var actual = cut.reduceLeftOption((s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
+    }
+
+    @Test
+    void reduceRight() {
+        cut = Path.of(ABC);
+
+        final var expect = "abc";
+        final var actual = cut.reduceRight((s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
+    }
+
+    @Test
+    void reduceRightOption() {
+        cut = Path.of(ABC);
+
+        final var expect = Option.of("abc");
+        final var actual = cut.reduceRightOption((s, s2) -> s + s2);
+
+        assertThat(actual).isEqualTo(expect);
     }
 }

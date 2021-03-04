@@ -1,13 +1,18 @@
 package com.columnzero.gstruct.util;
 
+import io.vavr.collection.Foldable;
+import io.vavr.collection.Stream;
+import io.vavr.control.Option;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
-public class Path<T> implements Iterable<T> {
+public class Path<T> implements Iterable<T>, Foldable<T> {
 
     private static final Path<Object> ROOT = new Path<>(new RootValue());
 
@@ -172,6 +177,36 @@ public class Path<T> implements Iterable<T> {
     @Override
     public String toString() {
         return toString("/");
+    }
+
+    @Override
+    public <U> U foldLeft(U zero, BiFunction<? super U, ? super T, ? extends U> combine) {
+        return Stream.ofAll(this).foldLeft(zero, combine);
+    }
+
+    @Override
+    public <U> U foldRight(U zero, BiFunction<? super T, ? super U, ? extends U> combine) {
+        return Stream.ofAll(this).foldRight(zero, combine);
+    }
+
+    @Override
+    public T reduceLeft(BiFunction<? super T, ? super T, ? extends T> op) {
+        return Stream.ofAll(this).reduceLeft(op);
+    }
+
+    @Override
+    public Option<T> reduceLeftOption(BiFunction<? super T, ? super T, ? extends T> op) {
+        return Stream.ofAll(this).reduceLeftOption(op);
+    }
+
+    @Override
+    public T reduceRight(BiFunction<? super T, ? super T, ? extends T> op) {
+        return Stream.ofAll(this).reduceRight(op);
+    }
+
+    @Override
+    public Option<T> reduceRightOption(BiFunction<? super T, ? super T, ? extends T> op) {
+        return Stream.ofAll(this).reduceRightOption(op);
     }
 
     /**
