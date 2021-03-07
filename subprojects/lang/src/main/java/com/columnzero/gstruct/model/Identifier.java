@@ -36,6 +36,11 @@ public interface Identifier {
         public int compareTo(Local that) {
             return this.id.compareTo(that.id);
         }
+
+        @Override
+        public String toString() {
+            return id;
+        }
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

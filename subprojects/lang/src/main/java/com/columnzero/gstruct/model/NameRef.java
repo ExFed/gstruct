@@ -22,7 +22,13 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
 
     @Override
     public Type get() {
-        return getValue().get();
+        return asRef().get();
+    }
+
+    public Ref<Type> asRef() {
+        return model.getBindings()
+                    .get(name)
+                    .getOrElseThrow(() -> new BindingNotFoundException(name));
     }
 
     @Override
@@ -37,9 +43,7 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
 
     @Override
     public Ref<Type> getValue() {
-        return model.getBindings()
-                    .get(name)
-                    .getOrElseThrow(() -> new BindingNotFoundException(name));
+        return asRef();
     }
 
     @Override

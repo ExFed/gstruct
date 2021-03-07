@@ -6,7 +6,6 @@ import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
