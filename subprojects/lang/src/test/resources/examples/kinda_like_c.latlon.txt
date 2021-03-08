@@ -1,0 +1,18 @@
+typedef tuple { double } DecimalDeg;
+
+typedef tuple { Int, Int, Real } DegMinSec;
+
+typedef struct {
+    northEast LatLon;
+    southWest LatLon;
+    height Real;
+} GeoVolume;
+
+typedef int Int;
+
+typedef struct {
+    latitude DecimalDeg;
+    longitude DegMinSec;
+} LatLon;
+
+typedef float Real;
