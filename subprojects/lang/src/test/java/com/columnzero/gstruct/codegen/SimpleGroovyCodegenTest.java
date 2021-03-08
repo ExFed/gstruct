@@ -26,8 +26,8 @@ class SimpleGroovyCodegenTest {
                               .find(file -> "latlon.gs".equals(file.getName()))
                               .get();
         final var expectContentFile =
-                ExampleSources.walkExamples(".txt")
-                              .find(file -> "kinda_like_c.latlon.txt".equals(file.getName()))
+                ExampleSources.walkExamples(".expect.c")
+                              .find(file -> "latlon.kinda_like_c.expect.c".equals(file.getName()))
                               .get();
         final var expectContent = Files.readString(expectContentFile.toPath());
         final var templateSrc =
@@ -46,6 +46,7 @@ class SimpleGroovyCodegenTest {
                                    .stream()
                                    .map(StringWriter::toString)
                                    .collect(Collectors.joining("\n"));
+
         assertThat(actualContent).isEqualTo(expectContent);
         assertThat(writers.keySet()).containsExactlyElementsIn(model.getBindings().keySet());
     }

@@ -3,12 +3,17 @@ def visitType
 
 def visitExtern = { t -> t.name }
 
+def visitFields = { fields ->
+    fields.collect { f, ft -> "    ${visitType(ft)} $f;\n" }.join('')
+}
+
 def visitTuple = { t ->
-    'tuple { ' + t.types.collect { visitType(it) }.join(', ') + ' }'
+    def fields = visitFields(t.types.indexed().collectEntries{ f, ft -> ["_$f", ft] })
+    'struct {' + (fields ? "\n$fields" : '')  + '}'
 }
 
 def visitStruct = { t ->
-    def fields = t.fields.toJavaMap().collect { f, ft -> "    ${visitType(ft)} $f;\n" }.join('')
+    def fields = visitFields(t.fields.toJavaMap())
     'struct {' + (fields ? "\n$fields" : '') + '}'
 }
 

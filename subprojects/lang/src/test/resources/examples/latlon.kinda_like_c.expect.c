@@ -1,6 +1,12 @@
-typedef tuple { double } DecimalDeg;
+typedef struct {
+    double _0;
+} DecimalDeg;
 
-typedef tuple { Int, Int, Real } DegMinSec;
+typedef struct {
+    Int _0;
+    Int _1;
+    Real _2;
+} DegMinSec;
 
 typedef struct {
     LatLon northEast;
