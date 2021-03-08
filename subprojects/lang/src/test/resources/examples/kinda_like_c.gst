@@ -8,7 +8,7 @@ def visitTuple = { t ->
 }
 
 def visitStruct = { t ->
-    def fields = t.fields.toJavaMap().collect { f, ft -> "    $f ${visitType(ft)};\n" }.join('')
+    def fields = t.fields.toJavaMap().collect { f, ft -> "    ${visitType(ft)} $f;\n" }.join('')
     'struct {' + (fields ? "\n$fields" : '') + '}'
 }
 
