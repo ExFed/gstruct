@@ -107,19 +107,4 @@ class NameRefTest {
     void nonEqualRefsHaveDifferentHashCodes(Object row, Object col) {
         assertThat(row.hashCode()).isNotEqualTo(col.hashCode());
     }
-
-    @Test
-    void getKey() {
-        assertThat((Object) FOO_BAR.getKey()).isEqualTo(FOO_BAR.getName());
-    }
-
-    @Test
-    void getValue() {
-        assertThat(FOO_BAR.getValue()).isEqualTo(BAR);
-    }
-
-    @Test
-    void setValue() {
-        assertThrows(UnsupportedOperationException.class, () -> FOO_BAR.setValue(BAZ));
-    }
 }

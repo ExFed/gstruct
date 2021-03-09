@@ -6,11 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Map;
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
-public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparable<NameRef> {
+public class NameRef implements Ref<Type>, Comparable<NameRef> {
 
     static NameRef of(Name name, NominalModel model) {
         return new NameRef(name, model);
@@ -22,33 +20,15 @@ public class NameRef implements Ref<Type>, Map.Entry<Name, Ref<Type>>, Comparabl
 
     @Override
     public Type get() {
-        return asRef().get();
-    }
-
-    public Ref<Type> asRef() {
         return model.getBindings()
                     .get(name)
-                    .getOrElseThrow(() -> new BindingNotFoundException(name));
+                    .getOrElseThrow(() -> new BindingNotFoundException(name))
+                    .get();
     }
 
     @Override
     public String toString() {
         return "NameRef->" + name;
-    }
-
-    @Override
-    public Name getKey() {
-        return name;
-    }
-
-    @Override
-    public Ref<Type> getValue() {
-        return asRef();
-    }
-
-    @Override
-    public Ref<Type> setValue(Ref<Type> value) {
-        throw new UnsupportedOperationException("unmodifiable");
     }
 
     @Override

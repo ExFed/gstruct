@@ -25,5 +25,10 @@ public interface Ref<T extends Type> {
         return (Ref<R>) ref;
     }
 
+    /**
+     * Gets the underlying {@link Type}.
+     *
+     * @return the underlying type.
+     */
     T get();
 }
