@@ -1,6 +1,8 @@
 package com.columnzero.gstruct.model;
 
+import io.vavr.collection.Array;
 import io.vavr.collection.List;
+import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,7 +27,7 @@ public class Tuple implements Type {
      */
     @lombok.Builder
     public static Tuple tuple(@Singular Iterable<Ref<Type>> types) {
-        return new Tuple(List.ofAll(types));
+        return new Tuple(Array.ofAll(types));
     }
 
     /**
@@ -36,7 +38,7 @@ public class Tuple implements Type {
      * @return a new tuple
      */
     public static Tuple tuple(Type... types) {
-        return new Tuple(List.of(types).map(Ref::constRef));
+        return new Tuple(Array.of(types).map(Ref::constRef));
     }
 
     /**
@@ -48,8 +50,8 @@ public class Tuple implements Type {
      */
     @SafeVarargs
     public static Tuple tuple(Ref<? extends Type>... refs) {
-        final Stream<Ref<Type>> narrowed = Stream.of(refs).map(Ref::narrow);
-        return new Tuple(narrowed.toList());
+        final Array<Ref<Type>> narrowed = Array.of(refs).map(Ref::narrow);
+        return new Tuple(narrowed);
     }
 
     /**
@@ -61,7 +63,7 @@ public class Tuple implements Type {
         return UNIT;
     }
 
-    @NonNull List<Ref<Type>> types;
+    @NonNull Seq<Ref<Type>> types;
 
     @Override
     public String toString() {

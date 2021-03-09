@@ -51,12 +51,12 @@ public interface Ref<T> extends Value<T> {
     }
 
     @Override
-    default <U> Value<U> map(Function<? super T, ? extends U> mapper) {
+    default <U> Ref<U> map(Function<? super T, ? extends U> mapper) {
         return ref(() -> mapper.apply(get()));
     }
 
     @Override
-    default Value<T> peek(Consumer<? super T> action) {
+    default Ref<T> peek(Consumer<? super T> action) {
         action.accept(get());
         return this;
     }
@@ -71,4 +71,3 @@ public interface Ref<T> extends Value<T> {
         return Iterator.of(get());
     }
 }
-
