@@ -3,12 +3,13 @@ package com.columnzero.gstruct.model;
 import com.columnzero.gstruct.util.TestUtil;
 import org.junit.jupiter.api.Test;
 
+import static com.columnzero.gstruct.model.Extern.extern;
+
 class DefaultRefTest {
 
-    private static final DefaultRef<String> A1 = new DefaultRef<>(() -> "a");
-    private static final DefaultRef<String> A2 = new DefaultRef<>(() -> "a");
-    private static final DefaultRef<String> B = new DefaultRef<>(() -> "b");
-
+    private static final DefaultRef<Extern> A1 = new DefaultRef<>(() -> extern("a"));
+    private static final DefaultRef<Extern> A2 = new DefaultRef<>(() -> extern("a"));
+    private static final DefaultRef<Extern> B = new DefaultRef<>(() -> extern("b"));
 
     @Test
     void equalsAndHashCode() {

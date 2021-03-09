@@ -11,12 +11,11 @@ import java.util.function.Supplier;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Value
-class DefaultRef<R> implements Ref<R> {
+class DefaultRef<R extends Type> implements Ref<R> {
 
     @Getter(AccessLevel.NONE)
     @NonNull Supplier<R> supplier;
 
-    @Override
     public R get() {
         return supplier.get();
     }
