@@ -2,6 +2,8 @@ package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.util.Path;
 import com.columnzero.gstruct.util.Paths;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -10,28 +12,36 @@ import java.io.File;
 /**
  * Represents a source file.
  */
-@Value(staticConstructor = "sourceFile")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Value
 public class SourceFile implements Comparable<SourceFile> {
 
-    @NonNull File file;
-
-    public SourceFile(File file) {
+    /**
+     * Creates a new {@link SourceFile} instance.
+     *
+     * @param root Root of the file tree containing this source file
+     * @param file The source file
+     *
+     * @return a new {@link SourceFile}
+     */
+    public static SourceFile sourceFile(@NonNull SourceTree.Root root, @NonNull File file) {
         if (!file.isFile()) {
             throw new IllegalArgumentException("not a regular file: " + file);
         }
 
-        this.file = file;
+        return new SourceFile(root, file);
     }
+
+    @NonNull SourceTree.Root root;
+    @NonNull File file;
 
     /**
      * Gets the namespace of this source file relative to a given root directory.
      *
-     * @param rootDir Root of the file tree containing this source file.
-     *
      * @return The namespace of the file.
      */
-    public Path<String> getNamespace(File rootDir) {
-        return Paths.from(this.file.getParentFile(), rootDir);
+    public Path<String> getNamespace() {
+        return Paths.from(this.file.getParentFile(), root.getDirectory().toFile());
     }
 
     @Override

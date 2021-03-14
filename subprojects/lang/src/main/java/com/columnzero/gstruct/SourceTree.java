@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static com.columnzero.gstruct.SourceFile.sourceFile;
+
 /**
  * A collection of source files.
  */
@@ -43,41 +45,23 @@ public class SourceTree {
     @NonNull Stream<SourceFile> files;
 
     /**
-     * The root of the source tree. Determines the namespace of declarations.
-     *
-     * @return A directory.
-     */
-    public File getRootDirectory() {
-        return root.directory.toFile();
-    }
-
-    /**
      * Gets the namespaces formed by the source tree.
      */
     public Map<SourceFile, Path<String>> getNamespaces() {
 
-        final File rootDir = getRootDirectory();
         final Map<SourceFile, Path<String>> namespaces = new LinkedHashMap<>();
         for (SourceFile source : getFiles()) {
-            final var namespace = source.getNamespace(rootDir);
-            namespaces.put(source, namespace);
+            namespaces.put(source, source.getNamespace());
         }
         return namespaces;
     }
 
-    private static <K extends Comparable<?>, V> Multimap<V, K> invert(java.util.Map<K, V> map) {
-        final var kvEntries = map.entrySet().stream().map(Tuple::fromEntry);
-        return LinkedHashMultimap.withSortedSet().ofAll(kvEntries, Tuple2::swap);
-    }
-
     public Multimap<Path<String>, SourceFile> mapByNamespace() {
 
-        var rootDir = getRootDirectory();
-        Multimap<Path<String>, SourceFile> map = TreeMultimap.withSeq()
-                                                             .empty(Comparators::lexicographic);
+        Multimap<Path<String>, SourceFile> map =
+                TreeMultimap.withSeq().empty(Comparators::lexicographic);
         for (SourceFile source : getFiles()) {
-            var namespace = source.getNamespace(rootDir);
-            map = map.put(namespace, source);
+            map = map.put(source.getNamespace(), source);
         }
         return map;
     }
@@ -126,7 +110,7 @@ public class SourceTree {
                           .map(java.nio.file.Path::toFile)
                           .filter(File::isFile)
                           .filter(selector)
-                          .map(SourceFile::new);
+                          .map(file -> sourceFile(this, file));
             return new SourceTree(this, sourceFiles);
         }
     }

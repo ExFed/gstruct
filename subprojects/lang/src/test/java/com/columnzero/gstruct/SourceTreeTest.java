@@ -44,7 +44,7 @@ class SourceTreeTest {
                 TEST_FILES.stream()
                           .filter(s -> s.endsWith(".gsml"))
                           .collect(LinkedHashMap::new,
-                                   (t, s) -> t.put(sourceFile(new File(tempDir, s)),
+                                   (t, s) -> t.put(sourceFile(root, new File(tempDir, s)),
                                                    path(s.split("/")).getParent()),
                                    Map::putAll);
 

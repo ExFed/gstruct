@@ -43,9 +43,9 @@ class SourceFileTest {
     void getNamespace(String filePath, Path<String> expect) {
 
         final File file = new File(tempDir, filePath);
-        final SourceFile sourceFile = new SourceFile(file);
+        final SourceFile sourceFile = SourceFile.sourceFile(SourceTree.root(tempDir), file);
 
         assertThat(sourceFile.getFile()).isEqualTo(file);
-        assertThat(sourceFile.getNamespace(tempDir)).isEqualTo(expect);
+        assertThat(sourceFile.getNamespace()).isEqualTo(expect);
     }
 }
