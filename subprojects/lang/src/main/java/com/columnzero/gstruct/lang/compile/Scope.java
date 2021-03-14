@@ -4,12 +4,14 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
+import io.vavr.Function1;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @AllArgsConstructor
 class Scope extends GroovyObjectSupport {
@@ -29,10 +31,6 @@ class Scope extends GroovyObjectSupport {
 
     @Getter
     private final @NonNull Map<String, Object> keywords;
-
-    public Scope() {
-        this(new HashMap<>());
-    }
 
     @Override
     public Object getProperty(String property) {

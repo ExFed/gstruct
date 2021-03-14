@@ -1,22 +1,17 @@
 package com.columnzero.gstruct.lang.compile;
 
-import com.columnzero.gstruct.SourceFile;
-import com.columnzero.gstruct.SourceTree;
 import com.columnzero.gstruct.model.Extern;
-import com.columnzero.gstruct.model.Identifier;
 import com.columnzero.gstruct.model.Identifier.Name;
 import com.columnzero.gstruct.model.NominalModel;
 import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
 import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
-import com.columnzero.gstruct.util.Path;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
-import io.vavr.Tuple2;
 import lombok.NonNull;
 import org.tinylog.Logger;
 
@@ -24,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -61,63 +55,56 @@ public class NominalCompiler {
         return mapping -> mapping.forEach(bindFunc);
     }
 
-    private static Consumer<Map<String, Ref<Type>>> binder(State state) {
-        var namespace = state.getNamespace();
-        var model = state.getModel();
+    private static Consumer<Map<String, Ref<Type>>> binder(CompileContext context) {
+        var namespace = context.getNamespace();
+        var model = context.getModel();
         return binder((s, typeRef) -> model.bind(namespace.child(local(s)), typeRef));
     }
 
-    public static NominalModel compile(@NonNull SourceTree tree) throws IOException {
-
-        var model = new NominalModel();
-        for (Tuple2<Path<String>, SourceFile> entry : tree.mapByNamespace()) {
-            doCompile(entry._2.getFile(), Identifier.name(entry._1), model);
-        }
-        return model;
-    }
-
-    @lombok.Builder(builderMethodName = "configure",
-                    buildMethodName = "compile",
-                    builderClassName = "Config")
     public static NominalModel compile(@NonNull File source, @NonNull Name namespace)
             throws IOException {
 
-        return doCompile(source, namespace, new NominalModel());
+        CompileContext context = CompileContext.builder()
+                                               .namespace(namespace)
+                                               .model(new NominalModel())
+                                               .build();
+
+        var actions = context.getActions();
+        var visitFile = visitFileAction(source, context);
+
+        actions.offer(visitFile); // get the traversal started
+
+        compile(context);
+
+        return context.getModel();
     }
 
-    private static NominalModel doCompile(File source, Name namespace, NominalModel model)
-            throws IOException {
+    private static void compile(CompileContext context) throws IOException {
+        final var defaultKeywords = getDefaultKeywords(context);
+        context.getScope().getKeywords().putAll(defaultKeywords);
 
-        DelegatingScript script = new DelegatingGroovyParser().parse(source);
+        final var actions = context.getActions();
+        while (!actions.isEmpty()) {
+            actions.poll().execute(); // traverse each syntax node
+        }
+    }
 
-        State compileState = State.builder()
-                                  .keywordsInjector(NominalCompiler::getDefaultKeywords)
-                                  .namespace(namespace)
-                                  .model(model)
-                                  .build();
-
-        Runnable firstAction = () -> {
-            script.setDelegate(compileState.getScope());
+    private static CompileAction visitFileAction(File source, CompileContext context) {
+        final var scope = context.getScope();
+        return () -> {
+            DelegatingScript script = new DelegatingGroovyParser().parse(source);
+            script.setDelegate(scope);
             script.run();
         };
-
-        Queue<Runnable> actions = compileState.getActions();
-
-        actions.offer(firstAction); // get the traversal started
-        while (!actions.isEmpty()) {
-            actions.poll().run(); // traverse each syntax node
-        }
-
-        return compileState.getModel();
     }
 
-    private static Map<String, Closure<?>> getDefaultKeywords(State state) {
-        var scope = state.getScope();
+    private static Map<String, Object> getDefaultKeywords(CompileContext context) {
+        var scope = context.getScope();
         return Map.of(
-                "bind", asClosure(scope, binder(state)),
+                "bind", asClosure(scope, binder(context)),
                 "extern", asClosure(scope, externCons()),
-                "tuple", asClosure(scope, tupleCons(state)),
-                "struct", asClosure(scope, structCons(state))
+                "tuple", asClosure(scope, tupleCons(context)),
+                "struct", asClosure(scope, structCons(context))
         );
     }
 
@@ -128,45 +115,45 @@ public class NominalCompiler {
         };
     }
 
-    private static Function<Closure<?>, Ref<Tuple>> tupleCons(State state) {
+    private static Function<Closure<?>, Ref<Tuple>> tupleCons(CompileContext context) {
         return cl -> {
             Logger.debug("initializing tuple");
             var tupleBuilder = Tuple.builder();
-            Runnable task = () -> {
+            CompileAction task = () -> {
                 Logger.debug("configuring tuple");
-                final var namedRefs = refBindings(state);
-                Scope scope = Scope.inherit(state.getScope(),
+                final var namedRefs = refBindings(context);
+                Scope scope = Scope.inherit(context.getScope(),
                                             Scope.of(namedRefs));
-                Closure<Void> typesAssigner =
+                Object typesAssigner =
                         asListClosure(scope, (List<Ref<Type>> t) -> t.forEach(tupleBuilder::type));
                 scope.getKeywords().put("types", typesAssigner);
                 with(scope, cl);
             };
-            state.getActions().offer(task);
+            context.getActions().offer(task);
             return ref(tupleBuilder::build);
         };
     }
 
-    private static Function<Closure<?>, Ref<Struct>> structCons(State state) {
+    private static Function<Closure<?>, Ref<Struct>> structCons(CompileContext context) {
         return cl -> {
             Logger.debug("initializing struct");
             var structBuilder = Struct.builder();
-            Runnable task = () -> {
+            CompileAction task = () -> {
                 Logger.debug("configuring struct");
-                Scope scope = Scope.inherit(state.getScope(), Scope.of(refBindings(state)));
+                Scope scope = Scope.inherit(context.getScope(), Scope.of(refBindings(context)));
                 Closure<Void> fieldAssigner = asClosure(scope, binder(structBuilder::field));
                 scope.getKeywords().put("field", fieldAssigner);
                 with(scope, cl);
             };
-            state.getActions().offer(task);
+            context.getActions().offer(task);
             return ref(structBuilder::build);
         };
     }
 
-    private static Map<String, Ref<Type>> refBindings(State state) {
-        return state.getModel()
-                    .getNameRefs()
-                    .toJavaMap(nr -> io.vavr.Tuple.of(
+    private static Map<String, Ref<Type>> refBindings(CompileContext context) {
+        return context.getModel()
+                      .getNameRefs()
+                      .toJavaMap(nr -> io.vavr.Tuple.of(
                             nr.getName().getPath().getValue().getId(), nr));
     }
 }
