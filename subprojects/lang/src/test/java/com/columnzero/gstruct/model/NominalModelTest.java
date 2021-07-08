@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.columnzero.gstruct.model.Extern.extern;
 import static com.columnzero.gstruct.model.Identifier.name;
-import static com.columnzero.gstruct.model.Ref.constRef;
+import static com.columnzero.gstruct.model.Type.constRef;
 import static com.columnzero.gstruct.model.Struct.struct;
 import static com.columnzero.gstruct.model.Tuple.tuple;
 import static com.google.common.truth.Truth.assertThat;
@@ -29,7 +29,7 @@ class NominalModelTest {
     public static final Struct EMPTY_STRUCT = struct();
 
     NominalModel model;
-    private TreeMap<Name, Ref<? extends Type>> expectBindings;
+    private TreeMap<Name, Type.Ref<? extends Type>> expectBindings;
 
     @BeforeEach
     void setUp() {
@@ -71,9 +71,9 @@ class NominalModelTest {
 
     @Test
     void binderByRef() {
-        model.bind(constRef(VOID_EXTERN)).to(UNIT_PATH);
-        model.bind(constRef(ZERO_TUPLE)).to(TUPLE0_PATH);
-        model.bind(constRef(EMPTY_STRUCT)).to(OBJECT_PATH);
+        model.bind(VOID_EXTERN).to(UNIT_PATH);
+        model.bind(ZERO_TUPLE).to(TUPLE0_PATH);
+        model.bind(EMPTY_STRUCT).to(OBJECT_PATH);
 
         assertThat(model.getBindings()).containsExactlyElementsIn(expectBindings);
     }

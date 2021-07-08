@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Value
-class DefaultRef<R extends Type> implements Ref<R> {
+class DefaultRef<R extends Type> implements Type.Ref<R> {
 
     @Getter(AccessLevel.NONE)
     @NonNull Supplier<R> supplier;

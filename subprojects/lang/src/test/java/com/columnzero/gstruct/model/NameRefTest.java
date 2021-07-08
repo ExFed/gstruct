@@ -1,8 +1,8 @@
 package com.columnzero.gstruct.model;
 
+import com.columnzero.gstruct.model.Type.Ref;
 import com.columnzero.gstruct.util.TestUtil;
 import com.columnzero.gstruct.util.TestUtil.EqualityEdge;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,9 +10,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.columnzero.gstruct.model.Extern.extern;
+import static com.columnzero.gstruct.model.Type.constRef;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.function.Predicate.not;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class NameRefTest {
@@ -28,8 +28,8 @@ class NameRefTest {
 
     static {
         model = new NominalModel();
-        BAR = Ref.constRef(extern("bar"));
-        BAZ = Ref.constRef(extern("baz"));
+        BAR = constRef(extern("bar"));
+        BAZ = constRef(extern("baz"));
         FOO_BAR = model.bind(BAR).to("foo");
         BIZ_BAZ = model.bind(BAZ).to("biz");
         QUX_BAZ = model.bind(BAZ).to("qux");

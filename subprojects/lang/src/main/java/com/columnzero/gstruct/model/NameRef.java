@@ -8,7 +8,7 @@ import lombok.Value;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
-public class NameRef implements Ref<Type>, Comparable<NameRef> {
+public class NameRef implements Type.Ref<Type>, Comparable<NameRef> {
 
     static NameRef of(Name name, NominalModel model) {
         return new NameRef(name, model);
@@ -22,8 +22,7 @@ public class NameRef implements Ref<Type>, Comparable<NameRef> {
     public Type get() {
         return model.getBindings()
                     .get(name)
-                    .getOrElseThrow(() -> new BindingNotFoundException(name))
-                    .get();
+                    .getOrElseThrow(() -> new BindingNotFoundException(name));
     }
 
     @Override

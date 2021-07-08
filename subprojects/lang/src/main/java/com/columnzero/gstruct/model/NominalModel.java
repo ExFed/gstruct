@@ -1,6 +1,7 @@
 package com.columnzero.gstruct.model;
 
 import com.columnzero.gstruct.model.Identifier.Name;
+import com.columnzero.gstruct.model.Type.Ref;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
 import io.vavr.collection.TreeMap;
@@ -25,7 +26,7 @@ public final class NominalModel {
      * Map of fully-qualified names bound to type references.
      */
     @Getter
-    private @NonNull Map<Name, Ref<Type>> bindings = TreeMap.empty();
+    private @NonNull Map<Name, Ref<? extends Type>> bindings = TreeMap.empty();
 
     /**
      * @return a set of all {@linkplain NameRef NameRefs} accumulated by this model's bindings
@@ -35,26 +36,27 @@ public final class NominalModel {
     }
 
     public Binder bind(Type type) {
-        return new Binder(Ref.constRef(type));
-    }
-
-    public Binder bind(Ref<? extends Type> typeRef) {
-        return new Binder(Ref.narrow(typeRef));
+        return new Binder(type);
     }
 
     /**
      * Binds a name to a type reference.
      *
-     * @param name    identifier of the type to bind
-     * @param typeRef reference to the type being bound
+     * @param name identifier of the type to bind
+     * @param type the type being bound
      *
      * @return the resulting {@link NameRef} representing the binding
      */
-    public NameRef bind(@NonNull Name name, @NonNull Ref<? extends Type> typeRef) {
+    public NameRef bind(@NonNull Name name, @NonNull Type type) {
         if (bindings.containsKey(name)) {
             throw new DuplicateBindingException("cannot bind duplicate name: " + name);
         }
-        bindings = bindings.put(name, Ref.narrow(typeRef));
+        if (type instanceof Ref) {
+            var typeRef = (Ref<? extends Type>) type;
+            bindings = bindings.put(name, typeRef);
+        } else {
+            bindings = bindings.put(name, Type.constRef(type));
+        }
         return ref(name);
     }
 
@@ -75,7 +77,7 @@ public final class NominalModel {
     @Getter(AccessLevel.NONE)
     public final class Binder {
 
-        private final @NonNull Ref<Type> type;
+        private final @NonNull Type type;
 
         public NameRef to(Name name) {
             return bind(name, type);

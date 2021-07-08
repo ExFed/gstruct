@@ -3,10 +3,10 @@ package com.columnzero.gstruct.lang.compile;
 import com.columnzero.gstruct.model.Extern;
 import com.columnzero.gstruct.model.Identifier.Name;
 import com.columnzero.gstruct.model.NominalModel;
-import com.columnzero.gstruct.model.Ref;
 import com.columnzero.gstruct.model.Struct;
 import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
+import com.columnzero.gstruct.model.Type.Ref;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.stc.ClosureParams;
@@ -27,8 +27,8 @@ import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
 import static com.columnzero.gstruct.model.Identifier.local;
-import static com.columnzero.gstruct.model.Ref.constRef;
-import static com.columnzero.gstruct.model.Ref.ref;
+import static com.columnzero.gstruct.model.Type.constRef;
+import static com.columnzero.gstruct.model.Type.ref;
 
 public class NominalCompiler {
 
@@ -51,7 +51,7 @@ public class NominalCompiler {
         clonedClosure.call(delegate);
     }
 
-    private static Consumer<Map<String, Ref<Type>>> binder(BiConsumer<String, Ref<Type>> bindFunc) {
+    private static Consumer<Map<String, Ref<Type>>> binder(BiConsumer<String, Type> bindFunc) {
         return mapping -> mapping.forEach(bindFunc);
     }
 
@@ -108,10 +108,10 @@ public class NominalCompiler {
         );
     }
 
-    private static Function<String, Ref<Extern>> externCons() {
+    private static Function<String, Extern> externCons() {
         return name -> {
             Logger.debug(() -> "initializing extern(" + name + ")");
-            return constRef(extern(name));
+            return extern(name);
         };
     }
 
@@ -125,7 +125,7 @@ public class NominalCompiler {
                 Scope scope = Scope.inherit(context.getScope(),
                                             Scope.of(namedRefs));
                 Object typesAssigner =
-                        asListClosure(scope, (List<Ref<Type>> t) -> t.forEach(tupleBuilder::type));
+                        asListClosure(scope, (List<Type> t) -> t.forEach(tupleBuilder::type));
                 scope.getKeywords().put("types", typesAssigner);
                 with(scope, cl);
             };
@@ -154,6 +154,6 @@ public class NominalCompiler {
         return context.getModel()
                       .getNameRefs()
                       .toJavaMap(nr -> io.vavr.Tuple.of(
-                            nr.getName().getPath().getValue().getId(), nr));
+                              nr.getName().getPath().getValue().getId(), nr));
     }
 }

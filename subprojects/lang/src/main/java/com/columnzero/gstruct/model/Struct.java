@@ -13,7 +13,7 @@ import lombok.Value;
 import java.util.stream.Collectors;
 
 import static com.columnzero.gstruct.model.Identifier.local;
-import static com.columnzero.gstruct.model.Ref.narrow;
+import static com.columnzero.gstruct.model.Type.narrow;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
@@ -34,7 +34,7 @@ public class Struct implements Type {
      */
     public static Struct struct(java.util.Map<String, ? extends Ref<? extends Type>> fields) {
 
-        final Map<Local, Ref<Type>> locals =
+        final Map<Local, Type> locals =
                 LinkedHashMap.ofAll(fields).map((k, v) -> Tuple.of(local(k), narrow(v)));
         return new Struct(locals);
     }
@@ -48,7 +48,7 @@ public class Struct implements Type {
         return UNIT;
     }
 
-    @NonNull Map<Local, Ref<Type>> fields;
+    @NonNull Map<Local, Type> fields;
 
     @Override
     public String toString() {
@@ -59,15 +59,19 @@ public class Struct implements Type {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Builder {
 
-        private Map<String, Ref<Type>> fields = LinkedHashMap.empty();
+        private Map<Local, Type> fields = LinkedHashMap.empty();
 
-        public Builder field(String id, Ref<? extends Type> typeRef) {
-            fields = fields.put(id, narrow(typeRef));
+        public Builder field(String id, Type type) {
+            return field(local(id), type);
+        }
+
+        public Builder field(Local id, Type type) {
+            fields = fields.put(id, type);
             return this;
         }
 
         public Struct build() {
-            return new Struct(fields.map((k, v) -> Tuple.of(local(k), narrow(v))));
+            return new Struct(fields);
         }
     }
 }

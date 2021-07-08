@@ -27,7 +27,7 @@ visitType = { val ->
         case Tuple: visitTuple(val); break
         case Struct: visitStruct(val); break
         case NameRef: visitNameRef(val); break
-        case Ref: visitRef(val); break
+        case Type.Ref: visitRef(val); break
         default: throw new UnsupportedOperationException("unknown value: $val")
     }
 }

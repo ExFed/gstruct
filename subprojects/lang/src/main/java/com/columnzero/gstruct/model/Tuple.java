@@ -25,7 +25,7 @@ public class Tuple implements Type {
      * @return a new tuple
      */
     @lombok.Builder
-    public static Tuple tuple(@Singular Iterable<Ref<Type>> types) {
+    public static Tuple tuple(@Singular Iterable<Type> types) {
         return new Tuple(Array.ofAll(types));
     }
 
@@ -37,20 +37,7 @@ public class Tuple implements Type {
      * @return a new tuple
      */
     public static Tuple tuple(Type... types) {
-        return new Tuple(Array.of(types).map(Ref::constRef));
-    }
-
-    /**
-     * Constructs a tuple.
-     *
-     * @param refs an ordered sequence of type refs
-     *
-     * @return a new tuple
-     */
-    @SafeVarargs
-    public static Tuple tuple(Ref<? extends Type>... refs) {
-        final Array<Ref<Type>> narrowed = Array.of(refs).map(Ref::narrow);
-        return new Tuple(narrowed);
+        return new Tuple(Array.of(types));
     }
 
     /**
@@ -62,7 +49,7 @@ public class Tuple implements Type {
         return UNIT;
     }
 
-    @NonNull Seq<Ref<Type>> types;
+    @NonNull Seq<Type> types;
 
     @Override
     public String toString() {
