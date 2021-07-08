@@ -1,7 +1,7 @@
 package com.columnzero.gstruct;
 
 import com.columnzero.gstruct.lang.TestFileUtil;
-import com.columnzero.gstruct.util.FQName;
+import com.columnzero.gstruct.model.Identifier;
 import com.columnzero.gstruct.util.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,7 +35,7 @@ class SourceFileTest {
 
     private static Stream<Arguments> getNamespaceSource() {
         return FILENAMES.stream()
-                        .map(s -> arguments(s, FQName.fromString(s).getNamespace()));
+                        .map(s -> arguments(s, Path.path(s.split("/")).getParent()));
     }
 
     @ParameterizedTest

@@ -41,7 +41,7 @@ class AdjacencyGraphTest {
     }
 
     AdjacencyGraph<String, String> givenOneNodeAndOneCycle() {
-        return givenOneNode().putEdge(EdgeId.of(n1, n1), e1Val);
+        return givenOneNode().putEdge(new EdgeId(n1, n1), e1Val);
     }
 
     @Test
@@ -51,7 +51,7 @@ class AdjacencyGraphTest {
         assertThat(graph.getNodes().toJavaMap()).containsExactly(n1, n1Val);
         assertThat(graph.getNodeValue(n1).getOrNull()).isEqualTo(n1Val);
 
-        EdgeId e1 = EdgeId.of(n1, n1);
+        EdgeId e1 = new EdgeId(n1, n1);
         assertThat(graph.getEdges().toJavaMap()).containsExactly(e1, e1Val);
         assertThat(graph.getEdgeValue(e1).getOrNull()).isEqualTo(e1Val);
     }

@@ -4,10 +4,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -252,6 +254,11 @@ public class Trie<T, V> {
                         getValue().equals(other.getValue());
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(key) ^ Objects.hashCode(node.getValue());
         }
 
         @Override

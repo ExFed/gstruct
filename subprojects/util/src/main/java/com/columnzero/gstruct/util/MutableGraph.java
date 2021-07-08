@@ -24,21 +24,21 @@ import java.util.stream.Collectors;
 public class MutableGraph<N, E> {
 
     @EqualsAndHashCode.Include
-    private final Map<FQName, Node<N, E>> nodes = new LinkedHashMap<>();
+    private final Map<Path<String>, Node<N, E>> nodes = new LinkedHashMap<>();
 
-    public Node<N, E> addNode(FQName id) {
+    public Node<N, E> addNode(Path<String> id) {
         return nodes.computeIfAbsent(id, fqName -> new Node<>(this, fqName));
     }
 
-    public Optional<Node<N, E>> findNode(FQName id) {
+    public Optional<Node<N, E>> findNode(Path<String> id) {
         return Optional.ofNullable(nodes.get(id));
     }
 
-    public Optional<Edge<N, E>> findEdge(FQName fromId, FQName toId) {
+    public Optional<Edge<N, E>> findEdge(Path<String> fromId, Path<String> toId) {
         return findNode(fromId).flatMap(from -> from.findEdge(toId));
     }
 
-    public Set<FQName> getOutgoingNeighbors(FQName nodeId) {
+    public Set<Path<String>> getOutgoingNeighbors(Path<String> nodeId) {
         return findNode(nodeId).map(Node::getOutgoingNeighbors)
                                .stream()
                                .flatMap(Collection::stream)
@@ -46,20 +46,20 @@ public class MutableGraph<N, E> {
                                .collect(Collectors.toUnmodifiableSet());
     }
 
-    public boolean areAdjacent(FQName fromId, FQName toId) {
+    public boolean areAdjacent(Path<String> fromId, Path<String> toId) {
         return findNode(fromId).flatMap(from -> findNode(toId).map(from::isAdjacentTo))
                                .orElse(false);
     }
 
-    public void removeNode(FQName id) {
+    public void removeNode(Path<String> id) {
         nodes.remove(id);
     }
 
-    public Optional<Edge<N, E>> addEdge(FQName fromId, FQName toId) {
+    public Optional<Edge<N, E>> addEdge(Path<String> fromId, Path<String> toId) {
         return findNode(fromId).flatMap(from -> findNode(toId).map(from::addEdge));
     }
 
-    public void removeEdge(FQName fromId, FQName toId) {
+    public void removeEdge(Path<String> fromId, Path<String> toId) {
         findEdge(fromId, toId).ifPresent(Edge::remove);
     }
 
@@ -87,12 +87,12 @@ public class MutableGraph<N, E> {
 
         @ToString.Include
         @EqualsAndHashCode.Include
-        private final @NonNull FQName id;
+        private final @NonNull Path<String> id;
 
         @ToString.Include
         private N value;
 
-        private final Map<FQName, Edge<N, E>> edgesOut = new LinkedHashMap<>();
+        private final Map<Path<String>, Edge<N, E>> edgesOut = new LinkedHashMap<>();
 
         public boolean isAdjacentTo(Node<N, E> other) {
             return edgesOut.containsKey(other.getId());
@@ -118,7 +118,7 @@ public class MutableGraph<N, E> {
             return edgesOut.containsKey(edge.getTo().getId());
         }
 
-        private Optional<Edge<N, E>> findEdge(FQName toNodeId) {
+        private Optional<Edge<N, E>> findEdge(Path<String> toNodeId) {
             return Optional.ofNullable(edgesOut.get(toNodeId));
         }
     }
@@ -148,12 +148,12 @@ public class MutableGraph<N, E> {
         }
 
         @ToString.Include(name = "from")
-        private FQName getFromId() {
+        private Path<String> getFromId() {
             return from.getId();
         }
 
         @ToString.Include(name = "to")
-        private FQName getToId() {
+        private Path<String> getToId() {
             return to.getId();
         }
     }

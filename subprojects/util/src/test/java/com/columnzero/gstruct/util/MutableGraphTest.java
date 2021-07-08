@@ -13,7 +13,7 @@ class MutableGraphTest {
 
     private final String nodeVal0 = "foo";
     private final String edgeVal0 = "bar";
-    private final FQName idAbc = FQName.of("a", "b", "c");
+    private final Path<String> idAbc = Path.path("a", "b", "c");
     private MutableGraph<String, String> graph;
 
     @BeforeEach

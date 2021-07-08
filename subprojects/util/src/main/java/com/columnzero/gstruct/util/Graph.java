@@ -1,5 +1,6 @@
 package com.columnzero.gstruct.util;
 
+import io.vavr.collection.Iterator;
 import io.vavr.collection.Set;
 import io.vavr.control.Option;
 import lombok.NonNull;
@@ -14,6 +15,7 @@ public interface Graph<N, E> {
      *
      * @param id    Key that identifies the node.
      * @param value Value associated with the node.
+     *
      * @return A new immutable graph.
      */
     Graph<N, E> putNode(NodeId id, N value);
@@ -22,8 +24,8 @@ public interface Graph<N, E> {
      * Attempts to get the value of a node.
      *
      * @param id Key that identifies the node.
-     * @return {@link Option.Some} value if the node exists, otherwise
-     *         {@link Option.None}.
+     *
+     * @return {@link Option.Some} value if the node exists, otherwise {@link Option.None}.
      */
     Option<N> getNodeValue(NodeId id);
 
@@ -31,6 +33,7 @@ public interface Graph<N, E> {
      * Gets nodes from which this node is a neighbor.
      *
      * @param id Key that identifies the node.
+     *
      * @return A set of node identifiers.
      */
     Set<NodeId> getNeighborsOut(NodeId id);
@@ -39,6 +42,7 @@ public interface Graph<N, E> {
      * Remove a node from the graph if it exists.
      *
      * @param id Key that identifies the node.
+     *
      * @return A new immutable graph.
      */
     Graph<N, E> removeNode(NodeId id);
@@ -48,6 +52,7 @@ public interface Graph<N, E> {
      *
      * @param id    Key that identifies the edge.
      * @param value Value associated with the edge.
+     *
      * @return A new immutable graph.
      */
     Graph<N, E> putEdge(EdgeId id, E value);
@@ -56,8 +61,8 @@ public interface Graph<N, E> {
      * Attempts to get the value of an edge.
      *
      * @param id Key that identifies the edge.
-     * @return {@link Option.Some} value if the edge exists, otherwise
-     *         {@link Option.None}.
+     *
+     * @return {@link Option.Some} value if the edge exists, otherwise {@link Option.None}.
      */
     Option<E> getEdgeValue(EdgeId id);
 
@@ -65,34 +70,33 @@ public interface Graph<N, E> {
      * Remove a edge from the graph if it exists.
      *
      * @param id Key that identifies the edge.
+     *
      * @return A new immutable graph.
      */
     Graph<N, E> removeEdge(EdgeId id);
 
-    @Value(staticConstructor = "of")
+    @Value
     class NodeId implements Comparable<NodeId> {
         public static NodeId of(String first, String... tail) {
-            return of(FQName.of(first, tail));
+            final var pathIt = Iterator.concat(Iterator.of(first), Iterator.of(tail));
+            return new NodeId(Path.of(pathIt));
         }
 
-        @NonNull
-        FQName value;
+        @NonNull Path<String> value;
 
         @Override
-        public int compareTo(NodeId o) {
-            return this.getValue().compareTo(o.getValue());
+        public int compareTo(@NonNull NodeId o) {
+            return Comparators.lexicographic(this.value, o.getValue());
         }
     }
 
-    @Value(staticConstructor = "of")
+    @Value
     class EdgeId implements Comparable<EdgeId> {
-        @NonNull
-        NodeId from;
-        @NonNull
-        NodeId to;
+        @NonNull NodeId from;
+        @NonNull NodeId to;
 
         @Override
-        public int compareTo(EdgeId o) {
+        public int compareTo(@NonNull EdgeId o) {
             return compareToForward(o);
         }
 
