@@ -1,5 +1,8 @@
 package com.columnzero.gstruct.util;
 
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 /**
  * A node in a generic, tokenized prefix search tree.
  * <p>
@@ -42,6 +45,20 @@ public interface PrefixNode<T, V> {
     void removeValue();
 
     /**
+     * Checks if this node contains any children.
+     *
+     * @return {@code true} if and only if this node contains no children.
+     */
+    boolean isLeaf();
+
+    /**
+     * Gets an unmodifiable view of all children contained by this node.
+     *
+     * @return an unmodifiable view of this node's children.
+     */
+    Map<T, PrefixNode<T, V>> getChildren();
+
+    /**
      * Creates a child associated with the given token if it doesn't already exist.
      *
      * @param token Key that maps to the child.
@@ -76,4 +93,80 @@ public interface PrefixNode<T, V> {
      * @return The child that was removed, or {@code null} if there was none.
      */
     PrefixNode<T, V> removeChild(Object token);
+
+    interface Tree<T, V> extends PrefixNode<T, V> {
+
+        @Override
+        default boolean hasValue() {
+            return false;
+        }
+
+        @Override
+        default V getValue() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        default void setValue(V value) {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        default void removeValue() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        default boolean isLeaf() {
+            return false;
+        }
+    }
+
+    interface Leaf<V> extends PrefixNode<Object, V> {
+
+        @Override
+        default boolean hasValue() {
+            return true;
+        }
+
+        @Override
+        default void setValue(V value) {
+            throw new UnsupportedOperationException("immutable");
+        }
+
+        @Override
+        default void removeValue() {
+            throw new UnsupportedOperationException("immutable");
+        }
+
+        @Override
+        default boolean isLeaf() {
+            return true;
+        }
+
+        @Override
+        default Map<Object, PrefixNode<Object, V>> getChildren() {
+            return Map.of();
+        }
+
+        @Override
+        default PrefixNode<Object, V> putChildIfAbsent(Object token) {
+            throw new UnsupportedOperationException("leaf");
+        }
+
+        @Override
+        default boolean hasChild(Object token) {
+            return false;
+        }
+
+        @Override
+        default PrefixNode<Object, V> getChild(Object token) {
+            throw new NoSuchElementException("leaf");
+        }
+
+        @Override
+        default PrefixNode<Object, V> removeChild(Object token) {
+            throw new NoSuchElementException("leaf");
+        }
+    }
 }

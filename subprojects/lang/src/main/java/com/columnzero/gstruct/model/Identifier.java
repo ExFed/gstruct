@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public interface Identifier {
 
     static Local local(String id) {
+        // TODO validate identifier
         return new Local(id);
     }
 
@@ -46,6 +47,7 @@ public interface Identifier {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Value
     class Name implements Identifier, Comparable<Name>, Iterable<Local> {
+
         @NonNull Path<Local> path;
 
         @Override
@@ -58,8 +60,12 @@ public interface Identifier {
             return Stream.ofAll(path).map(Local::getId).collect(Collectors.joining("/"));
         }
 
-        public Name child(Local local) {
-            return new Name(path.child(local));
+        public Name child(Local id) {
+            return new Name(path.child(id));
+        }
+
+        public Name child(String id) {
+            return child(local(id));
         }
 
         @Override

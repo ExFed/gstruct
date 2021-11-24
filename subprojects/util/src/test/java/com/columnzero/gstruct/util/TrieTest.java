@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -184,5 +185,18 @@ class TrieTest {
                 .add(() -> assertThat(actual).contains(entry.getValue()));
         }
         assertAll(exec.build());
+    }
+
+    @Test
+    void getNode() {
+        cut.putAll(data);
+
+        var root = cut.getNode();
+        assertThat(root.getValue()).isEqualTo(data.get(Path.getRoot()));
+
+        for (Entry<Path<Integer>, String> e : data.entrySet()) {
+            var node = cut.getNode(e.getKey());
+            assertThat(node.map(PrefixNode::getValue)).isEqualTo(Optional.of(e.getValue()));
+        }
     }
 }

@@ -1,7 +1,11 @@
 package com.columnzero.gstruct.model;
 
+import com.columnzero.gstruct.model.Identifier.Local;
 import com.columnzero.gstruct.model.Identifier.Name;
 import com.columnzero.gstruct.model.Type.Ref;
+import com.columnzero.gstruct.util.Path;
+import com.columnzero.gstruct.util.Trie;
+import io.vavr.Tuple2;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
 import io.vavr.collection.TreeMap;
@@ -11,8 +15,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.columnzero.gstruct.model.Identifier.name;
@@ -64,6 +72,14 @@ public final class NominalModel {
         return NameRef.of(name, this);
     }
 
+    public Trie<Local, Ref<? extends Type>> asTrie() {
+        var tree = new Trie<Local, Ref<? extends Type>>();
+        for (Tuple2<Name, Ref<? extends Type>> binding : bindings) {
+            tree.put(binding._1.getPath(), binding._2);
+        }
+        return tree;
+    }
+
     @Override
     public String toString() {
         final var bindingsString =
@@ -88,4 +104,36 @@ public final class NominalModel {
         }
     }
 
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @EqualsAndHashCode
+    @ToString
+    public static class NameTree {
+
+        private final @NonNull java.util.Map<Local, NameTree> children = new LinkedHashMap<>();
+
+
+        public Optional<NameTree> get(Local identifier) {
+            return Optional.ofNullable(children.get(identifier));
+        }
+
+        public Optional<NameTree> get(String identifier) {
+            return get(Identifier.local(identifier));
+        }
+
+        public boolean isLeaf() {
+            return children.isEmpty();
+        }
+
+        private void put(Name name) {
+            put(name.iterator());
+        }
+
+        private void put(Iterator<Local> it) {
+            if (it.hasNext()) {
+                var next = it.next();
+                var child = children.computeIfAbsent(next, local -> new NameTree());
+                child.put(it);
+            }
+        }
+    }
 }

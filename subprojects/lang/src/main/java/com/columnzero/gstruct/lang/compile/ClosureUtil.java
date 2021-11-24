@@ -1,6 +1,9 @@
 package com.columnzero.gstruct.lang.compile;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.FirstParam;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,5 +66,20 @@ public final class ClosureUtil {
     @SuppressWarnings("unchecked")
     private static <T> List<T> asArgsList(Object... args) {
         return Arrays.stream(args).map(a -> (T) a).collect(Collectors.toList());
+    }
+
+    public static <T, U> void invokeWith(U self, Closure<T> closure) {
+        invokeWith(closure.getOwner(), self, closure);
+    }
+
+    public static <T, U> void invokeWith(
+            Object owner,
+            @DelegatesTo.Target("delegate") U self,
+            @DelegatesTo(target = "delegate", strategy = Closure.DELEGATE_ONLY)
+            @ClosureParams(FirstParam.class) Closure<T> closure) {
+
+        final Closure<T> clonedClosure = closure.rehydrate(self, owner, self);
+        clonedClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
+        clonedClosure.call(self);
     }
 }

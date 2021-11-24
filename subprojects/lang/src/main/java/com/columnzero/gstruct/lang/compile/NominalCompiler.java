@@ -8,9 +8,6 @@ import com.columnzero.gstruct.model.Tuple;
 import com.columnzero.gstruct.model.Type;
 import com.columnzero.gstruct.model.Type.Ref;
 import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
-import groovy.transform.stc.ClosureParams;
-import groovy.transform.stc.FirstParam;
 import groovy.util.DelegatingScript;
 import lombok.NonNull;
 import org.tinylog.Logger;
@@ -26,29 +23,12 @@ import java.util.function.Function;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asClosure;
 import static com.columnzero.gstruct.lang.compile.ClosureUtil.asListClosure;
 import static com.columnzero.gstruct.model.Extern.extern;
-import static com.columnzero.gstruct.model.Identifier.local;
-import static com.columnzero.gstruct.model.Type.constRef;
 import static com.columnzero.gstruct.model.Type.ref;
 
 public class NominalCompiler {
 
     private NominalCompiler() {
         throw new AssertionError("not instantiable");
-    }
-
-    private static <T, U> void with(U delegate, Closure<T> closure) {
-        with(closure.getOwner(), delegate, closure);
-    }
-
-    private static <T, U> void with(
-            Object owner,
-            @DelegatesTo.Target("delegate") U delegate,
-            @DelegatesTo(target = "delegate", strategy = Closure.DELEGATE_ONLY)
-            @ClosureParams(FirstParam.class) Closure<T> closure) {
-
-        final Closure<T> clonedClosure = closure.rehydrate(delegate, owner, delegate);
-        clonedClosure.setResolveStrategy(Closure.DELEGATE_ONLY);
-        clonedClosure.call(delegate);
     }
 
     private static Consumer<Map<String, Ref<Type>>> binder(BiConsumer<String, Type> bindFunc) {
@@ -58,7 +38,7 @@ public class NominalCompiler {
     private static Consumer<Map<String, Ref<Type>>> binder(CompileContext context) {
         var namespace = context.getNamespace();
         var model = context.getModel();
-        return binder((s, typeRef) -> model.bind(namespace.child(local(s)), typeRef));
+        return binder((s, typeRef) -> model.bind(namespace.child(s), typeRef));
     }
 
     public static NominalModel compile(@NonNull File source, @NonNull Name namespace)
@@ -127,7 +107,7 @@ public class NominalCompiler {
                 Object typesAssigner =
                         asListClosure(scope, (List<Type> t) -> t.forEach(tupleBuilder::type));
                 scope.getKeywords().put("types", typesAssigner);
-                with(scope, cl);
+                ClosureUtil.invokeWith(scope, cl);
             };
             context.getActions().offer(task);
             return ref(tupleBuilder::build);
@@ -143,7 +123,7 @@ public class NominalCompiler {
                 Scope scope = Scope.inherit(context.getScope(), Scope.of(refBindings(context)));
                 Closure<Void> fieldAssigner = asClosure(scope, binder(structBuilder::field));
                 scope.getKeywords().put("field", fieldAssigner);
-                with(scope, cl);
+                ClosureUtil.invokeWith(scope, cl);
             };
             context.getActions().offer(task);
             return ref(structBuilder::build);

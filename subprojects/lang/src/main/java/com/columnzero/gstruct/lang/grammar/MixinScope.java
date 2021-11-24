@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.tinylog.Logger;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,24 +63,30 @@ public final class MixinScope implements GroovyObject {
     }
 
     @Override
-    public Object getProperty(String propertyName) {
-        var found = findProperty(propertyName);
-        if (found != null) {
-            return found.getV1().getProperty(found.getV2().getScope());
+    public Object getProperty(String id) {
+        for (var proxy : proxies) {
+            try {
+                return proxy.getProperty(id);
+            } catch (MissingPropertyException ex) {
+                Logger.trace(ex);
+                // continue
+            }
         }
-
-        throw new MissingPropertyException(propertyName, this.getClass());
+        throw new MissingPropertyException(id, this.getClass());
     }
 
     @Override
-    public void setProperty(String propertyName, Object newValue) {
-        var found = findProperty(propertyName);
-        if (found != null) {
-            found.getV1().setProperty(found.getV2().getScope(), newValue);
-            return;
+    public void setProperty(String id, Object value) {
+        for (var proxy : proxies) {
+            try {
+                proxy.setProperty(id, value);
+                return;
+            } catch (MissingPropertyException ex) {
+                Logger.trace(ex);
+                // continue
+            }
         }
-
-        throw new MissingPropertyException(propertyName, this.getClass());
+        throw new MissingPropertyException(id, this.getClass());
     }
 
     @Override
@@ -90,7 +97,7 @@ public final class MixinScope implements GroovyObject {
 
 @AllArgsConstructor
 @Getter
-final class ScopeProxy {
+final class ScopeProxy implements GroovyObject {
 
     private final @NonNull Object scope;
     private final @NonNull MetaClass metaClass;
@@ -99,8 +106,23 @@ final class ScopeProxy {
         this(scope, InvokerHelper.getMetaClass(scope));
     }
 
-    public Object invokeMethod(String name, Object args) {
-        return metaClass.invokeMethod(scope, name, args);
+    public Object invokeMethod(String id, Object args) {
+        return metaClass.invokeMethod(scope, id, args);
+    }
+
+    @Override
+    public Object getProperty(String id) {
+        return metaClass.getProperty(scope, id);
+    }
+
+    @Override
+    public void setProperty(String id, Object newValue) {
+        metaClass.setProperty(scope, id, newValue);
+    }
+
+    @Override
+    public void setMetaClass(MetaClass metaClass) {
+        throw new UnsupportedOperationException("cannot set metaclass");
     }
 
     public CallResult<Object> invokeUnlessMissing(String name, Object[] args) {

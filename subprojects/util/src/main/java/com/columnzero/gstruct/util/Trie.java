@@ -4,12 +4,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -27,7 +28,7 @@ import java.util.Set;
  * @see Object#equals(Object)
  */
 @EqualsAndHashCode
-public class Trie<T, V> {
+public final class Trie<T, V> {
 
     private int size = 0;
 
@@ -45,6 +46,14 @@ public class Trie<T, V> {
     public V get(Object key) {
         final Node node = findNode(key);
         return node == null ? null : node.getValue();
+    }
+
+    public PrefixNode<T, V> getNode() {
+        return root;
+    }
+
+    public Optional<PrefixNode<T, V>> getNode(Object key) {
+        return Optional.ofNullable(findNode(key));
     }
 
     public V put(Path<? extends T> key, V value) {
@@ -182,6 +191,16 @@ public class Trie<T, V> {
         }
 
         @Override
+        public boolean isLeaf() {
+            return children.isEmpty();
+        }
+
+        @Override
+        public Map<T, PrefixNode<T, V>> getChildren() {
+            return Collections.unmodifiableMap(children);
+        }
+
+        @Override
         public Node putChildIfAbsent(T token) {
             return children.computeIfAbsent(token, k -> new Node());
         }
@@ -210,12 +229,40 @@ public class Trie<T, V> {
         private Set<Entry<T, Node>> getChildEntries() {
             return children.entrySet();
         }
+
+        @Override
+        public String toString() {
+            return buildString(new StringBuilder(), 0).toString();
+        }
+
+        private StringBuilder buildString(StringBuilder sb, int level) {
+            if (hasValue()) {
+                sb.append('(').append(getValue()).append(") ");
+            }
+            var indent = " ".repeat(level * 2);
+            if (children.isEmpty()) {
+                return sb.append('\n');
+            }
+            sb.append("{\n");
+            for (Entry<T, Node> e : children.entrySet()) {
+                var innerLevel = level + 1;
+                var innerIndent = " ".repeat(innerLevel * 2);
+                sb.append(innerIndent)
+                  .append(e.getKey())
+                  .append(": ");
+                e.getValue()
+                 .buildString(sb, innerLevel);
+            }
+            return sb.append(indent)
+                     .append("}\n");
+        }
     }
 
     /**
      * A set of entries.
      */
     private final class NodeEntrySet {
+
         private final Set<Entry<Path<T>, V>> inner = new LinkedHashSet<>();
     }
 
